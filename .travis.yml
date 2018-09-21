@@ -1,0 +1,21 @@
+sudo: required
+dist: trusty
+language: node_js
+node_js:
+  - "8"
+services:
+ - docker
+
+cache:
+  directories:
+    - "proxy/node_modules"
+
+before_install:
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
+  
+install:
+ - cd proxy && npm install
+
+script:
+  - cd proxy && npm run build
