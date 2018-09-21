@@ -18,6 +18,8 @@ http {
 
   gzip  on;
 
+  map_hash_bucket_size 128;
+
   map $ssl_client_s_dn $clientUser {
    {% for client in clientList -%}
      "{{ client.subjectDn }}" "{{ client.user }}";
