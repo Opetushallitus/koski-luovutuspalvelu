@@ -11,6 +11,7 @@ cache:
   directories:
     - proxy/node_modules
     - $HOME/.cache/pip
+    - $HOME/docker-cache
 
 env:
   global:
@@ -24,16 +25,14 @@ env:
 before_install:
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
+  # Load cached docker images
+  - if [[ -d $HOME/docker-cache ]]; then ls $HOME/docker-cache/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
   
 install:
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm install
 
 script:
-  - $(aws ecr get-login --no-include-email)
-  - docker pull 190073735177.dkr.ecr.eu-west-1.amazonaws.com/utility/koski-luovutuspalvelu-proxy:latest
-  - docker pull 190073735177.dkr.ecr.eu-west-1.amazonaws.com/utility/koski-luovutuspalvelu-certbot:latest
-
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run build
   - cd $TRAVIS_BUILD_DIR/certbot
@@ -46,7 +45,13 @@ script:
   - docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v `pwd`/target/koski-luovutuspalvelu-proxy-config-ci.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest
   - sleep 5
   - npm run test
-  
+
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker-cache && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker-cache/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker-cache/$1.tar.gz'
+
 after_script:
   - docker logs koski-luovutuspalvelu-proxy
   - docker stop -t 5 koski-luovutuspalvelu-proxy
