@@ -41,7 +41,6 @@ script:
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run testca
   - node scripts/create-local-config.js > target/koski-luovutuspalvelu-proxy-config-ci.json
-  - cat target/koski-luovutuspalvelu-proxy-config-ci.json
   - docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v `pwd`/target/koski-luovutuspalvelu-proxy-config-ci.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest
   - sleep 5
   - npm run test
