@@ -46,5 +46,7 @@ after_script:
   - docker stop -t 5 koski-luovutuspalvelu-proxy
 
 deploy:
-  provider: script
-  script: $TRAVIS_BUILD_DIR/proxy/scripts/upload-image.sh
+  - provider: script
+    script: $TRAVIS_BUILD_DIR/proxy/scripts/upload-image.sh
+  - provider: script
+    script: $TRAVIS_BUILD_DIR/certbot/scripts/upload-image.sh
