@@ -9,7 +9,9 @@ services:
 
 cache:
   directories:
-    - "proxy/node_modules"
+    - proxy/node_modules
+    - $HOME/.cache/pip
+
 env:
   global:
     - AWS_DEFAULT_REGION=eu-west-1
@@ -28,6 +30,10 @@ install:
   - npm install
 
 script:
+  - $(aws ecr get-login --no-include-email)
+  - docker pull 190073735177.dkr.ecr.eu-west-1.amazonaws.com/utility/koski-luovutuspalvelu-proxy:latest
+  - docker pull 190073735177.dkr.ecr.eu-west-1.amazonaws.com/utility/koski-luovutuspalvelu-certbot:latest
+
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run build
   - cd $TRAVIS_BUILD_DIR/certbot
