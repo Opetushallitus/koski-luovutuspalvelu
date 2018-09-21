@@ -15,7 +15,9 @@ before_install:
   - export PATH=$PATH:$HOME/.local/bin
   
 install:
- - cd proxy && npm install
+  - cd $TRAVIS_BUILD_DIR/proxy
+  - npm install
 
 script:
-  - cd proxy && npm run build
+  - cd $TRAVIS_BUILD_DIR/proxy
+  - npm run build
