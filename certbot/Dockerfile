@@ -4,6 +4,5 @@ RUN apk add --no-cache python libssl1.0 openssl ca-certificates py-cryptography 
   && pip install --no-cache-dir certbot certbot-dns-route53
 
 COPY main.py /root
-COPY target/buildversion.txt /etc/nginx/html/koski-luovutuspalvelu/
-CMD python /root/main.py
-
+COPY target/buildversion.txt /root
+CMD cat /root/buildversion.txt && python /root/main.py
