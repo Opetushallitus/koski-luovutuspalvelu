@@ -1,12 +1,13 @@
+Requirements for local development:
 
-Developing locally (require virtualenv + python2)
+ * Docker
 
-    virtualenv test-env
-    cd test-env
-    source bin/activate
-    pip install certbot certbot-dns-route53
-    AWS_PROFILE=oph-koski-dev CERTBOT_DOMAIN=koski-luovutuspalvelu-dev.testiopintopolku.fi CERTBOT_PARAMETER_PREFIX=/dev/koski-luovutuspalvelu CERTBOT_PRODUCTION=no python ../main.py
+Build image and run test in oph-koski-dev
+(assumes AWS credentials as described in koski-aws-infra/README.md):
 
-Triggering
+    ./scripts/build.sh
+    ./scripts/run-locally-against-dev.sh
+
+Triggering run in actual AWS:
 
     aws ecs run-task --profile oph-koski-dev --cluster koski-ecs-cluster --task-definition koski_luovutuspalvelu_certbot

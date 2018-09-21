@@ -32,7 +32,7 @@ script:
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run build
   - cd $TRAVIS_BUILD_DIR/certbot
-  - ./build.sh
+  - ./scripts/build.sh
 
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run testca
