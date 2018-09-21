@@ -21,3 +21,16 @@ install:
 script:
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm run build
+  - cd $TRAVIS_BUILD_DIR/certbot
+  - ./build.sh
+
+  - cd $TRAVIS_BUILD_DIR/proxy
+  - npm run testca
+  - node scripts/create-local-config.js > target/koski-luovutuspalvelu-proxy-config-local.json
+  - cat target/koski-luovutuspalvelu-proxy-config-local.json
+  - DOCKER_RUN_ID=`docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v ${PWD}/target/koski-luovutuspalvelu-proxy-config-local.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest`
+  - sleep 5
+
+after_script:
+  - docker logs $DOCKER_RUN_ID
+  - docker stop -t 5 $DOCKER_RUN_ID
