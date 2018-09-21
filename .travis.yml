@@ -6,12 +6,10 @@ node_js:
 services:
  - docker
 
-
 cache:
   directories:
     - proxy/node_modules
     - $HOME/.cache/pip
-    - $HOME/docker-cache
 
 env:
   global:
@@ -25,9 +23,6 @@ env:
 before_install:
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  # Load cached docker images
-  - if [ -f $HOME/docker-cache/koski-luovutuspalvelu-proxy.tar.gz ]; then zcat $HOME/docker-cache/koski-luovutuspalvelu-proxy.tar.gz | docker load; fi
-  - if [ -f $HOME/docker-cache/koski-luovutuspalvelu-certbot.tar.gz ]; then zcat $HOME/docker-cache/koski-luovutuspalvelu-certbot.tar.gz | docker load; fi
   
 install:
   - cd $TRAVIS_BUILD_DIR/proxy
@@ -45,13 +40,7 @@ script:
   - docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v `pwd`/target/koski-luovutuspalvelu-proxy-config-ci.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest
   - sleep 5
   - npm run test
-
-before_cache:
-  # Save docker images to cache
-  - mkdir -p $HOME/docker-cache
-  - docker save koski-luovutuspalvelu-proxy:latest | gzip > $HOME/docker-cache/koski-luovutuspalvelu-proxy.tar.gz
-  - docker save koski-luovutuspalvelu-certbot:latest | gzip > $HOME/docker-cache/koski-luovutuspalvelu-certbot.tar.gz
-
+  
 after_script:
   - docker logs koski-luovutuspalvelu-proxy
   - docker stop -t 5 koski-luovutuspalvelu-proxy
