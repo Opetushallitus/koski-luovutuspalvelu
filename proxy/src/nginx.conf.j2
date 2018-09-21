@@ -1,0 +1,97 @@
+user nginx;
+error_log stderr warn;
+pid /var/run/nginx.pid;
+
+events {
+  worker_connections 1024;
+}
+
+http {
+  root /etc/nginx/html;
+
+  log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "" ""';
+
+  log_format ssl '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$ssl_client_verify" "$ssl_client_raw_cert" ""';
+
+  access_log /dev/stdout main;
+  access_log /dev/stdout ssl if=$log_ssl;
+
+  gzip  on;
+
+  map $ssl_client_s_dn $clientUser {
+   {% for client in clientList -%}
+     "{{ client.subjectDn }}" "{{ client.user }}";
+   {% endfor %}
+  }
+
+  map $clientUser $clientAuthorization {
+    include passwords.conf;
+  }
+
+  {% for client in clientList %}
+    # {{ client.subjectDn }}
+    geo $remote_addr $clientIps{{loop.index}} {
+      {% for ip in client.ips -%}
+        {{ ip }} "yes";
+      {% endfor -%}
+    }
+  {% endfor %}
+
+  map $ssl_client_s_dn $clientIpAllowed {
+    {% for client in clientList -%}
+      "{{ client.subjectDn }}" $clientIps{{ loop.index }};
+    {% endfor %}
+  }
+
+  map $ssl_client_verify $log_ssl {
+    "SUCCESS" 0;
+    "NONE" 0;
+    default 1;
+  }
+
+  server {
+    listen 443 ssl;
+    server_name localhost;
+    ssl_certificate /etc/ssl/proxy.crt;
+    ssl_certificate_key /etc/ssl/proxy.key;
+    ssl_client_certificate /etc/nginx/ca-certificates.crt;
+    ssl_verify_client optional;
+
+    location = /koski-luovutuspalvelu/buildversion.txt {
+    }
+
+    location / {
+      return 404;
+    }
+
+    error_page 495 /495.txt;
+      location /495.txt {
+      return 400 "ssl certificate error: $ssl_client_verify";
+    }
+
+    location = /koski-luovutuspalvelu/healthcheck/proxy {
+      return 200 "ok";
+    }
+
+    location /koski/api/luovutuspalvelu {
+      if ($ssl_client_verify != SUCCESS) {
+        return 403 "client certificate required";
+      }
+      if ($clientUser = "") {
+        return 403 "unknown client certificate: $ssl_client_s_dn";
+      }
+      if ($clientIpAllowed != "yes") {
+        return 403 "ip address $remote_addr not allowed";
+      }
+      if ($clientAuthorization = "") {
+        return 403 "internal error, password missing";
+      }
+      proxy_pass {{ koskiUrl }};
+      proxy_set_header Forwarded for="$remote_addr:$remote_port";
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-For $remote_addr;
+      proxy_set_header Authorization "Basic $clientAuthorization";
+      proxy_set_header Cookie "";
+    }
+  }
+}
