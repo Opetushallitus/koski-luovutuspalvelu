@@ -47,4 +47,4 @@ after_script:
 
 deploy:
   provider: script
-  script: ./proxy/scripts/upload-image.sh
+  script: $TRAVIS_BUILD_DIR/proxy/scripts/upload-image.sh
