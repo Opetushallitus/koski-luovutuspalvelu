@@ -30,6 +30,7 @@ script:
   - cat target/koski-luovutuspalvelu-proxy-config-ci.json
   - docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v `pwd`/target/koski-luovutuspalvelu-proxy-config-ci.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest
   - sleep 10
+  - npm run test
   
 after_script:
   - docker logs koski-luovutuspalvelu-proxy
