@@ -8,6 +8,7 @@ events {
 
 http {
   root /etc/nginx/html;
+  include mime.types;
 
   log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "" ""';
 
@@ -66,9 +67,9 @@ http {
       return 404;
     }
 
-    error_page 495 /495.txt;
-      location /495.txt {
-      return 400 "ssl certificate error: $ssl_client_verify";
+    error_page 495 /495.json;
+      location /495.json {
+      return 400 "[{\"key\": \"unauthorized.sslCertificateError\", \"message\": \"$ssl_client_verify\"}]";
     }
 
     location = /koski-luovutuspalvelu/healthcheck/proxy {
@@ -76,23 +77,24 @@ http {
     }
 
     location /koski/api/luovutuspalvelu {
+      default_type application/json;
       if ($ssl_client_verify != SUCCESS) {
-        return 403 "client certificate required";
+        return 403 "[{\"key\": \"unauthorized.clientCertificateRequired\", \"message\": \"Varmenne puuttuu\"}]";
       }
       if ($clientUser = "") {
-        return 403 "unknown client certificate: $ssl_client_s_dn";
+        return 403 "[{\"key\": \"unauthorized.unknownClientCertificate\", \"message\": \"Tuntematon varmenne: $ssl_client_s_dn\"}]";
       }
       if ($clientIpAllowed != "yes") {
-        return 403 "ip address $remote_addr not allowed";
+        return 403 "[{\"key\": \"unauthorized.unknownIpAddress\", \"message\": \"Tuntematon IP-osoite: $remote_addr\"}]";
       }
       if ($clientAuthorization = "") {
-        return 403 "internal error, password missing";
+        return 403 "[{\"key\": \"internalError\", \"message\": \"Salasana puuttuu.\"}]";
       }
       proxy_pass {{ koskiUrl }};
-      proxy_set_header Forwarded for="$remote_addr:$remote_port";
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header X-Forwarded-For $remote_addr;
       proxy_set_header Authorization "Basic $clientAuthorization";
+      proxy_set_header Forwarded "";
       proxy_set_header Cookie "";
     }
   }
