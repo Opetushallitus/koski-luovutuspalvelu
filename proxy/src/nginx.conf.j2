@@ -9,7 +9,8 @@ events {
 http {
   root /etc/nginx/html;
   include mime.types;
-
+  server_tokens off;
+ 
   log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "" ""';
 
   log_format ssl '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$ssl_client_verify" "$ssl_client_raw_cert" ""';
