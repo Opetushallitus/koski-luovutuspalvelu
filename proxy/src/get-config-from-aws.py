@@ -16,10 +16,15 @@ def requiredParameter(name):
         raise
 
 def optionalParameter(name):
+    full_name = parameter_prefix + name
     try:
-        return requiredParameter(name)
+        res = client.get_parameter(Name=full_name, WithDecryption=True)
+        return res['Parameter']['Value']
     except client.exceptions.ParameterNotFound:
         return None
+    except:
+        print 'Getting parameter failed', full_name
+        raise
 
 def getParametersByPath(path):
     full_path = parameter_prefix + path
