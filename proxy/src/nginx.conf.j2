@@ -62,6 +62,7 @@ http {
     ssl_verify_client optional;
     ssl_protocols TLSv1.2 TLSv1.3;
 
+    proxy_ssl_server_name on;
     location = /koski-luovutuspalvelu/buildversion.txt {
     }
 
