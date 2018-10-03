@@ -16,3 +16,9 @@ for ARTIFACT_NAME in koski-luovutuspalvelu-proxy koski-luovutuspalvelu-certbot; 
 done
 
 echo "Images pushed to ECR"
+
+echo "Restarting..."
+aws lambda invoke --function-name 500150530292:koski-luovutuspalvelu-proxy-restart --log-type Tail /dev/null | tee aws-cli-output.json
+cat aws-cli-output.json | python -c 'import json, sys, base64; print base64.b64decode(json.load(sys.stdin)["LogResult"])'
+
+echo "Deploy done."
