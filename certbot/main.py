@@ -50,7 +50,7 @@ def upload_certs(domain, parameter_prefix):
 domain = os.environ['CERTBOT_DOMAIN']
 if domain.endswith('.'):
     domain = domain[:-1]
-parameter_prefix = os.environ['CERTBOT_PARAMETER_PREFIX']
+parameter_prefix = os.environ['ENVIRONMENT_PARAMETER_PREFIX']
 use_staging = os.environ.get('CERTBOT_PRODUCTION') != 'yes'
 print 'Obtaining certificate for', domain
 obtain_certs(domain, use_staging)
