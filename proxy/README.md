@@ -20,3 +20,6 @@ Testing get-config-from-aws.py against oph-koski-dev AWS
 
     npm run test-aws-config-dev
 
+Force restarting container in ECS:
+
+    aws ecs update-service --profile oph-koski-dev --cluster koski-ecs-cluster --service koski_luovutuspalvelu_proxy --force-new-deployment
