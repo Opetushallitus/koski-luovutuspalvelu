@@ -26,3 +26,7 @@ IP-osoitteisiin.
                                                         |     certbot     |         +------------------+
                                                         +-----------------+
 </pre>
+
+# Linkkejä
+
+Travis CI: https://travis-ci.org/Opetushallitus/koski-luovutuspalvelu
