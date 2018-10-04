@@ -1,30 +1,34 @@
 # Koski luovutuspalvelu
 
-Luovutuspalvelu toimii proxynäviranomaisten järjestelmien ja Kosken
+Luovutuspalvelu toimii proxynä viranomaisten järjestelmien ja Kosken
 välillä.  Sen tehtävä on autentikoida viranomaisten API-kutsut
 varmenteella (client certificate) ja rajata pyynnöt tiettyihin
 IP-osoitteisiin.
 
+Kosken suuntaan proxy lisää pyyntöön kyseisen viranomaisen
+palvelukäyttäjän käyttäjätunnuksen/salasanan (viranomainen ei siis
+itse tiedä tätä salasanaa).
+
 <pre>
- +--------------+                   +--------------+    +-----------------+                   +------------+    +------------------+
- |              |+                  |     AWS      |    |      Koski      |                   |   Koski    |    |      Koski       |+
- | viranomainen +--- - - - - - - -->+ Network Load +--->+ luovutuspalvelu +--- - - - - - - -->+  haproxy   +----+ sovelluspalvelin ||
- |              ||    HTTPS w/      |   Balancer   |    |  proxy (Nginx)  |   HTTPS +         | (Cybercom) |    |    (Cybercom)    ||
- +--------------+|    client cert   +--------------+    +--------+--------+   basic auth      +------------+    +------------------+|
-  +--------------+                   (kiinteät IP:t)             |                                               +------------------+
-                                                                 |
-                                                           +-----+-----+
-                                                           |    AWS    |   Luovutuspalvelun konfiguraatio
-                                                           | Parameter |   (mm. sallitut viranomaisten varmenteet ja IPt,
-                                                           |   Store   |   palvelimen varmenne ja private key)
-                                                           +-----+-----+
-                                                                 ^
-                                                                 |
-                                                        +--------+--------+
-                                                        |      Koski      |         +------------------+
-                                                        | luovutuspalvelu +- - - -->+ Let's Encrypt CA |
-                                                        |     certbot     |         +------------------+
-                                                        +-----------------+
++--------------+                 +-------------+   +-----------------+               +------------+   +------------------+
+|              |+                | AWS Network |   |      Koski      |               |   Koski    |   |      Koski       |+
+| viranomainen +--- - - - - - -->+    Load     +-->+ luovutuspalvelu +-- - - - - - ->+  haproxy   +---+ sovelluspalvelin ||
+|              ||  HTTPS +       |  Balancer   |   |  proxy (Nginx)  |  HTTPS +      | (Cybercom) |   |    (Cybercom)    ||
++--------------+|  client cert   +-------------+   +--------+--------+  basic auth   +------------+   +------------------+|
+ +--------------+                 (kiinteät IP:)            |                                          +------------------+
+                                                            |
+                                                      +-----+-----+
+                                                      |    AWS    |   Luovutuspalvelun konfiguraatio
+                                                      | Parameter |   (mm. sallitut viranomaisten varmenteet ja IP:t,
+                                                      |   Store   |   palvelimen varmenne ja private key)
+                                                      +-----+-----+
+                                                            ^
+                                                            |
+                                                   +--------+--------+
+                                                   |      Koski      |         +------------------+
+                                                   | luovutuspalvelu +- - - -->+ Let's Encrypt CA |
+                                                   |     certbot     |         +------------------+
+                                                   +-----------------+
 </pre>
 
 # Linkkejä
