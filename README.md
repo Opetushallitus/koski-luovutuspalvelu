@@ -9,6 +9,9 @@ Kosken suuntaan proxy lisää pyyntöön kyseisen viranomaisen
 palvelukäyttäjän käyttäjätunnuksen/salasanan (viranomainen ei siis
 itse tiedä tätä salasanaa).
 
+Proxyllä on myös kiinteät IP-osoitteet, jotta viranomainen voi omassa
+järjestelmässään helpommin rajata ulosmenevää liikennettä.
+
 <pre>
 +--------------+                 +-------------+   +-----------------+               +------------+   +------------------+
 |              |+                | AWS Network |   |      Koski      |               |   Koski    |   |      Koski       |+
