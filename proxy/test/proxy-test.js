@@ -104,7 +104,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       const res = await gotWithClientCert('/koski/api/luovutuspalvelu/hetu', {
         json: true,
         headers: {
-	  'Forwarded': 'for=192.168.1.1',
+          'Forwarded': 'for=192.168.1.1',
           'Cookie': 'test=1',
         }
       })
@@ -113,6 +113,15 @@ describe('koski-luovutuspalvelu proxy', () => {
       const headers = res.body.koskiMock.headers
       expect(headers).not.to.have.property('forwarded')
       expect(headers).not.to.have.property('cookie')
+    })
+
+    it('adds Caller-Id header', async () => {
+      const res = await gotWithClientCert('/koski/api/luovutuspalvelu/hetu', {json: true})
+      expect(res.statusCode).to.equal(200)
+      expect(res.body).to.have.nested.property(
+        'koskiMock.headers.caller-id',
+        '1.2.246.562.10.00000000001.koski-luovutuspalvelu-proxy'
+      )
     })
 
     it('requires SSL client certificate', async () => {
