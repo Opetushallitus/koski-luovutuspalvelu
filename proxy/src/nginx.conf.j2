@@ -11,7 +11,7 @@ http {
   include mime.types;
   server_tokens off;
  
-  log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "" ""';
+  log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$proxyResponse" ""';
 
   log_format ssl '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$ssl_client_verify" "$ssl_client_raw_cert" ""';
 
@@ -53,6 +53,15 @@ http {
     default 1;
   }
 
+  map "$clientIpAllowed;$clientUser;$ssl_client_verify" $proxyResponse {
+    "~;NONE$" "unauthorized.clientCertificateRequired";
+    "~;FAILED.*$" "unauthorized.sslCertificateError";
+    "~;;SUCCESS$" "unauthorized.unknownClientCertificate";
+    "~^;.*;SUCCESS$" "unauthorized.unknownIpAddress";
+    "~^yes;.+;SUCCESS$" "ok";
+    default "unknown";
+  }
+
   server {
     listen 443 ssl;
     server_name localhost;
@@ -65,35 +74,49 @@ http {
     proxy_ssl_server_name on;
     proxy_buffering off;
 
-    location = /koski-luovutuspalvelu/buildversion.txt {
-    }
+    {% if testLogging is defined and testLogging %}
+    add_header X-Log "proxyResponse=$proxyResponse" always;
+    {% endif %}
 
     location / {
+      set $proxyResponse "notFound";
       return 404;
     }
 
-    error_page 495 /495.json;
-      location /495.json {
-      return 400 "[{\"key\": \"unauthorized.sslCertificateError\", \"message\": \"$ssl_client_verify\"}]";
+    location = /koski-luovutuspalvelu/buildversion.txt {
+      set $proxyResponse "ok";
     }
 
     location = /koski-luovutuspalvelu/healthcheck/proxy {
+      set $proxyResponse "ok";
       return 200 "ok";
+    }
+
+    error_page 495 /495.json;
+    location /495.json {
+      return 400 "[{\"key\": \"unauthorized.sslCertificateError\", \"message\": \"$ssl_client_verify\"}]";
     }
 
     location /koski/api/luovutuspalvelu {
       default_type application/json;
-      if ($ssl_client_verify != SUCCESS) {
-        return 403 "[{\"key\": \"unauthorized.clientCertificateRequired\", \"message\": \"Varmenne puuttuu\"}]";
+      if ($proxyResponse = "unauthorized.clientCertificateRequired") {
+        return 403 "[{\"key\": \"$proxyResponse\", \"message\": \"Varmenne puuttuu\"}]";
       }
-      if ($clientUser = "") {
-        return 403 "[{\"key\": \"unauthorized.unknownClientCertificate\", \"message\": \"Tuntematon varmenne: $ssl_client_s_dn\"}]";
+      if ($proxyResponse = "unauthorized.unknownClientCertificate") {
+        return 403 "[{\"key\": \"$proxyResponse\", \"message\": \"Tuntematon varmenne: $ssl_client_s_dn\"}]";
       }
-      if ($clientIpAllowed != "yes") {
-        return 403 "[{\"key\": \"unauthorized.unknownIpAddress\", \"message\": \"Tuntematon IP-osoite: $remote_addr\"}]";
+      if ($proxyResponse = "unauthorized.unknownIpAddress") {
+        return 403 "[{\"key\": \"$proxyResponse\", \"message\": \"Tuntematon IP-osoite: $remote_addr\"}]";
       }
       if ($clientAuthorization = "") {
-        return 403 "[{\"key\": \"internalError\", \"message\": \"Salasana puuttuu.\"}]";
+        set $proxyResponse "internalError.password";
+        return 500 "[{\"key\": \"internalError.password\", \"message\": \"Salasana puuttuu.\"}]";
+      }
+      if ($proxyResponse != "ok") {
+        return 500 "[{\"key\": \"internalError.state\", \"message\": \"Virheellinen tila.\"}]";
+      }
+      if ($proxyResponse = "ok") {
+        set $proxyResponse "proxied";
       }
       proxy_pass {{ koskiUrl }};
       proxy_set_header X-Forwarded-Proto $scheme;

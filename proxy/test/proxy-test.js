@@ -13,6 +13,12 @@ const koskiMockApp = express()
 koskiMockApp.get('/*', (req, res) => {
   // uncomment this to debug test failures
   // console.log(`koskiMockApp: ${req.url}`, req.headers)
+  if (req.originalUrl.includes('notfound')) {
+    res.status(404)
+  }
+  if (req.originalUrl.includes('unauthorized')) {
+    res.status(403)
+  }
   res.json({koskiMock: {url: req.url, headers: req.headers}})
 })
 const koskiMockServer = koskiMockApp.listen(koskiMockPort)
@@ -53,6 +59,7 @@ describe('koski-luovutuspalvelu proxy', () => {
 
     it('responds to proxy health check', async () => {
       const res = await gotWithoutClientCert('/koski-luovutuspalvelu/healthcheck/proxy')
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=ok')
       expect(res.statusCode).to.equal(200)
     })
 
@@ -63,6 +70,7 @@ describe('koski-luovutuspalvelu proxy', () => {
     it('returns build version', async () => {
       const res = await gotWithoutClientCert('/koski-luovutuspalvelu/buildversion.txt')
       expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=ok')
       expect(res.body).to.include('vcsRevision=')
     })
 
@@ -72,12 +80,14 @@ describe('koski-luovutuspalvelu proxy', () => {
 
     it('proxies API calls to Koski', async () => {
       const res = await gotWithClientCert('/koski/api/luovutuspalvelu/hetu', {json: true})
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property('koskiMock.url', '/koski/api/luovutuspalvelu/hetu')
     })
 
     it('adds basic authentication to request', async () => {
       const res = await gotWithClientCert('/koski/api/luovutuspalvelu/hetu', {json: true})
       expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property(
         'koskiMock.headers.authorization',
         'Basic ' + Buffer.from('clientUser:dummy123').toString('base64')
@@ -93,11 +103,13 @@ describe('koski-luovutuspalvelu proxy', () => {
         }
       })
       expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property('koskiMock.headers')
       const headers = res.body.koskiMock.headers
       expect(headers).to.have.property('x-forwarded-for')
       expect(headers['x-forwarded-for']).to.not.include('192.168.1.1')
       expect(headers).to.have.property('x-forwarded-proto', 'https')
+
     })
 
     it('removes Forwarded and Cookie headers (might confuse Koski backend)', async () => {
@@ -109,6 +121,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         }
       })
       expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property('koskiMock.headers')
       const headers = res.body.koskiMock.headers
       expect(headers).not.to.have.property('forwarded')
@@ -118,33 +131,50 @@ describe('koski-luovutuspalvelu proxy', () => {
     it('adds Caller-Id header', async () => {
       const res = await gotWithClientCert('/koski/api/luovutuspalvelu/hetu', {json: true})
       expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property(
         'koskiMock.headers.caller-id',
         '1.2.246.562.10.00000000001.koski-luovutuspalvelu-proxy'
       )
     })
 
+    it('proxies 403 status code from Koski', async () => {
+      const res = await gotWithClientCert('/koski/api/luovutuspalvelu/unauthorized', {json: true})
+      expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
+    })
+
+    it('proxies 404 status code from Koski', async () => {
+      const res = await gotWithClientCert('/koski/api/luovutuspalvelu/notfound', {json: true})
+      expect(res.statusCode).to.equal(404)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
+    })
+
     it('requires SSL client certificate', async () => {
       const res = await gotWithoutClientCert('/koski/api/luovutuspalvelu/hetu', {json: true})
       expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.clientCertificateRequired')
       expect(res.body).to.deep.equal([{"key": "unauthorized.clientCertificateRequired", "message": "Varmenne puuttuu"}])
     })
 
     it('requires known SSL client certificate', async () => {
       const res = await gotWithClientCert2('/koski/api/luovutuspalvelu/hetu', {json: true})
       expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownClientCertificate')
       expect(res.body).to.deep.equal([{"key": "unauthorized.unknownClientCertificate", "message": "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI"}])
     })
 
     it('does not accept self-signed SSL client certificate', async () => {
       const res = await gotWithSelfSignedClientCert('/koski/api/luovutuspalvelu/self', {json: true})
       expect(res.statusCode).to.equal(400)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.sslCertificateError')
       expect(res.body).to.deep.equal([{"key": "unauthorized.sslCertificateError", "message": "FAILED:unable to verify the first certificate"}])
     })
 
     it('does not accept connections from unknown IP address', async () => {
       const res = await gotWithClientCert3('/koski/api/luovutuspalvelu/ip', {json: true})
       expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownIpAddress')
       expect(res.body).to.have.nested.property('0.key', 'unauthorized.unknownIpAddress')
     })
 
@@ -153,10 +183,12 @@ describe('koski-luovutuspalvelu proxy', () => {
   describe('other URLs', () => {
     it('/ returns 404 foo', async () => {
       const res = await gotWithoutClientCert('/')
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
       expect(res.statusCode).to.equal(404)
     })
     it('/koski/api/koodisto/opiskeluoikeudentyyppi/latest returns 404', async () => {
       const res = await gotWithoutClientCert('/koski/api/koodisto/opiskeluoikeudentyyppi/latest')
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
       expect(res.statusCode).to.equal(404)
     })
   })

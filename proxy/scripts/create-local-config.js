@@ -22,7 +22,8 @@ const config = {
   passwords: {
     'clientUser': 'dummy123',
     'clientUser123': 'dummy456'
-  }
+  },
+  testLogging: true
 }
 
 console.log(JSON.stringify(config, null, 2))
