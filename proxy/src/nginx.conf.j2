@@ -10,13 +10,24 @@ http {
   root /etc/nginx/html;
   include mime.types;
   server_tokens off;
- 
-  log_format main '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$proxyResponse" ""';
 
-  log_format ssl '$remote_addr - "$ssl_client_s_dn" [$time_local] "$request" $status $body_bytes_sent "$ssl_client_verify" "$ssl_client_raw_cert" ""';
+  log_format json escape=json
+    '{'
+    '"time":"$time_iso8601",'
+    '"status":"$status",'
+    '"proxyResponse":"$proxyResponse",'
+    '"requestMethod":"$request_method",'
+    '"requestUri":"$request_uri",'
+    '"bodyBytesSent":$body_bytes_sent,'
+    '"requestTime":$request_time,'
+    '"remoteAddr":"$remote_addr",'
+    '"clientUser":"$clientUser",'
+    '"sslClientSubjectDn":"$ssl_client_s_dn",'
+    '"sslClientVerify":"$ssl_client_verify",'
+    '"sslClientCertificate":"$loggedSslClientCertificate"'
+    '}';
 
-  access_log /dev/stdout main;
-  access_log /dev/stdout ssl if=$log_ssl;
+  access_log /dev/stdout json;
 
   gzip  on;
 
@@ -47,10 +58,10 @@ http {
     {% endfor %}
   }
 
-  map $ssl_client_verify $log_ssl {
-    "SUCCESS" 0;
-    "NONE" 0;
-    default 1;
+  map $ssl_client_verify $loggedSslClientCertificate {
+    "SUCCESS" "";
+    "NONE" "";
+    default "$ssl_client_raw_cert";
   }
 
   map "$clientIpAllowed;$clientUser;$ssl_client_verify" $proxyResponse {
