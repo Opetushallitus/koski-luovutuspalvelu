@@ -103,6 +103,11 @@ http {
       return 200 "ok";
     }
 
+    location = /robots.txt {
+      set $proxyResponse "ok";
+      return 200 "User-Agent: *\nDisallow: /\n";
+    }
+
     error_page 495 /495.json;
     location /495.json {
       return 400 "[{\"key\": \"unauthorized.sslCertificateError\", \"message\": \"$ssl_client_verify\"}]";

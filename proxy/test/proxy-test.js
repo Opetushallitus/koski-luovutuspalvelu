@@ -76,6 +76,18 @@ describe('koski-luovutuspalvelu proxy', () => {
 
   })
 
+  describe('/robots.txt', () => {
+
+    it('disallows everything', async () => {
+      const res = await gotWithoutClientCert('/robots.txt')
+      expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=ok')
+      expect(res.headers).to.have.property('content-type', 'text/plain')
+      expect(res.body).to.equal('User-Agent: *\nDisallow: /\n')
+    })
+
+  })
+
   describe('/koski/api/luovutuspalvelu', () => {
 
     it('proxies API calls to Koski', async () => {
