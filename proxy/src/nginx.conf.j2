@@ -114,6 +114,14 @@ http {
       return 400 "[{\"key\": \"unauthorized.sslCertificateError\", \"message\": \"$ssl_client_verify\"}]";
     }
 
+    # to simplify log processing, treat plain HTTP (instead of HTTPS) as 404
+    # (instead of 400 "The plain HTTP request was sent to HTTPS port")
+    error_page 497 =404 /497.json;
+    location /497.json {
+      set $proxyResponse "notFound";
+      return 404;
+    }
+
     location /koski/api/luovutuspalvelu {
       default_type application/json;
       if ($proxyResponse = "unauthorized.clientCertificateRequired") {

@@ -203,6 +203,11 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
       expect(res.statusCode).to.equal(404)
     })
+    it('plain http returns 404', async () => {
+      const res = await gotWithoutClientCert(baseUrl.replace('https:', 'http:'))
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
+      expect(res.statusCode).to.equal(404)
+    })
   })
 
 })
