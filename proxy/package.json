@@ -5,7 +5,7 @@
   "scripts": {
     "test": "npm run testca && mocha test/proxy-test.js",
     "local": "npm run build && npm run testca && ./scripts/run-local.sh",
-    "build": "npm run buildversion && docker build --pull -t koski-luovutuspalvelu-proxy:latest .",
+    "build": "npm run buildversion && docker build --pull -t koski-luovutuspalvelu-proxy:latest . && ../scripts/check-base-image-date.sh Dockerfile 30",
     "buildversion": "mkdir -p target && ./scripts/create-buildversion.sh target/buildversion.txt",
     "testca": "./test/testca/generate-certs.sh",
     "shell": "docker exec -it koski-luovutuspalvelu-proxy bash",
