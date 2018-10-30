@@ -87,10 +87,8 @@ ja talleta se oph-koski-dev AWS-ympäristön "/local-certbot-test" polkuun
 
     ./scripts/run-locally-against-dev.sh
 
-Varsinaisen ajon käynnistäminen oph-koski-dev AWS-ympäristössä:
-
-    aws ecs run-task --profile oph-koski-dev --cluster koski-ecs-cluster --task-definition koski_luovutuspalvelu_certbot
-
 ## Linkkejä
+
+Tarkemmat ylläpito-ohjeet löytyvät koski-env/documentation/ kansiosta.
 
 Travis CI: https://travis-ci.org/Opetushallitus/koski-luovutuspalvelu
