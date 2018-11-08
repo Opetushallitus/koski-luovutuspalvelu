@@ -50,7 +50,7 @@ Docker-kontti, joka ajetaan ajastetusti parin kuukauden välein.
 Minimissään tarvitset nämä:
 
  * Docker
- * Node.js (testattu versiolla 8.x)
+ * Node.js (uusin 8.x sarjan + sen mukana tuleva NPM-versio)
  * openssl komentorivityökalun (tulee yleensä mukana OSX:ssä/Linuxissa)
 
 Docker-imagen buildaus ja testien ajo paikallisesti:
