@@ -7,11 +7,13 @@ RUN apt-get update \
   && pip install --no-cache-dir boto3 \
   && rm -rf /var/lib/apt/lists/*
 
-# Add "VRK CA for Service Providers - G3" from https://eevertti.vrk.fi/ca-varmenteet
+# Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://eevertti.vrk.fi/ca-varmenteet
 WORKDIR /
-COPY src/vrksp3.crt /tmp
+COPY src/vrksp3.crt src/vrkrootc.crt /tmp/
 RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates/vrksp3.crt -outform pem \
+  && openssl x509 -in /tmp/vrkrootc.crt -inform der -out /usr/share/ca-certificates/vrkrootc.crt -outform pem \
   && echo "vrksp3.crt" >> /etc/ca-certificates.conf \
+  && echo "vrkrootc.crt" >> /etc/ca-certificates.conf \
   && update-ca-certificates
 
 COPY src/entrypoint.sh src/get-config-from-aws.py src/setup-certs.py src/build-nginx-conf.py src/nginx.conf.j2 src/passwords.conf.j2 /etc/nginx/
