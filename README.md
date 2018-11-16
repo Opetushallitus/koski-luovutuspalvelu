@@ -42,7 +42,8 @@ Koska TLS-yhteys terminoidaan Nginxiin (eikä AWS:n load balanceriin,
 joka ei tällä hetkellä tue client certificateja), proxy tarvitsee
 sertifikaatin ja private keyn DNS-nimelleen. Tätä varten
 Certbot-komponentti hakee sertifikaatin Let's Encryptistä ja tallettaa
-sen (ja private keyn) AWS Parameter Storeen. Certbot on myöskin
+sen (ja private keyn) AWS Parameter Storeen. Oikeus domainiin validoidaan
+tekemällä muutos DNS:ään (Route53). Certbot on myöskin
 Docker-kontti, joka ajetaan ajastetusti parin kuukauden välein.
 
 ## Proxyn buildi ja ajaminen
