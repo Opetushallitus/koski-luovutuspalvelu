@@ -12,7 +12,9 @@ const myIp = getMyIp()
 const config = {
   proxyCertificate: fs.readFileSync(path.join(__dirname, '../test/testca/certs/proxy.crt'), 'UTF-8'),
   proxyPrivateKey: fs.readFileSync(path.join(__dirname, '../test/testca/private/proxy.key'), 'UTF-8'),
-  testCaCertificate: fs.readFileSync(path.join(__dirname, '../test/testca/certs/root-ca.crt'), 'UTF-8'),
+  extraCaCertificates: [
+    fs.readFileSync(path.join(__dirname, '../test/testca/certs/root-ca.crt'), 'UTF-8')
+  ],
   koskiUrl: `http://${myIp}:7023`,
   clientList: [
     {subjectDn: 'CN=client.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'clientuser'},

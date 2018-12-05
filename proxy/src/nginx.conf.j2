@@ -85,6 +85,7 @@ http {
 
     proxy_ssl_server_name on;
     proxy_buffering off;
+    client_body_buffer_size 100k;
 
     {% if testLogging is defined and testLogging %}
     add_header X-Log "proxyResponse=$proxyResponse" always;
