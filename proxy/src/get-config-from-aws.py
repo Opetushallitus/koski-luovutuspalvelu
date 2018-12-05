@@ -15,17 +15,6 @@ def requiredParameter(name):
         print 'Getting parameter failed', full_name
         raise
 
-def optionalParameter(name):
-    full_name = parameter_prefix + name
-    try:
-        res = client.get_parameter(Name=full_name, WithDecryption=True)
-        return res['Parameter']['Value']
-    except client.exceptions.ParameterNotFound:
-        return None
-    except:
-        print 'Getting parameter failed', full_name
-        raise
-
 def getParametersByPath(path):
     full_path = parameter_prefix + path
     paginator = client.get_paginator('get_parameters_by_path')
@@ -42,9 +31,8 @@ config = {
     'koskiUrl': requiredParameter('/koskiUrl')
 }
 
-testCaCertificate = optionalParameter('/testCaCertificate')
-if testCaCertificate:
-    config['testCaCertificate'] = testCaCertificate
+extraCaCertificatesDict = getParametersByPath('/extraCaCertificates')
+config['extraCaCertificates'] = extraCaCertificatesDict.values()
 
 clientListString = requiredParameter('/clientList')
 try:
