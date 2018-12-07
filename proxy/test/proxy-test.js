@@ -190,6 +190,15 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.body).to.have.nested.property('0.key', 'unauthorized.unknownIpAddress')
     })
 
+    it('proxying works for /koski/api/palveluvayla, too', async () => {
+      const res = await gotWithClientCert('/koski/api/palveluvayla/soapSomething', {json: true})
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
+      expect(res.body).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
+      expect(res.body).to.have.nested.property(
+        'koskiMock.headers.authorization',
+        'Basic ' + Buffer.from('clientUser:dummy123').toString('base64')
+      )
+    })
   })
 
   describe('other URLs', () => {
