@@ -123,7 +123,7 @@ http {
       return 404;
     }
 
-    location /koski/api/luovutuspalvelu {
+    location ~ ^/koski/api/(luovutuspalvelu|palveluvayla)/ {
       default_type application/json;
       if ($proxyResponse = "unauthorized.clientCertificateRequired") {
         return 403 "[{\"key\": \"$proxyResponse\", \"message\": \"Varmenne puuttuu\"}]";
