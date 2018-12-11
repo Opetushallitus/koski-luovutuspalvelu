@@ -7,10 +7,12 @@ RUN apt-get update \
   && pip install --no-cache-dir boto3 \
   && rm -rf /var/lib/apt/lists/*
 
-# Add "VRK Gov. Root CA" from https://eevertti.vrk.fi/ca-varmenteet
+# Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://eevertti.vrk.fi/ca-varmenteet
 WORKDIR /
-COPY src/vrkrootc.crt /tmp/
-RUN openssl x509 -in /tmp/vrkrootc.crt -inform der -out /usr/share/ca-certificates/vrkrootc.crt -outform pem \
+COPY src/vrksp3.crt src/vrkrootc.crt /tmp/
+RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates/vrksp3.crt -outform pem \
+  && openssl x509 -in /tmp/vrkrootc.crt -inform der -out /usr/share/ca-certificates/vrkrootc.crt -outform pem \
+  && echo "vrksp3.crt" >> /etc/ca-certificates.conf \
   && echo "vrkrootc.crt" >> /etc/ca-certificates.conf \
   && update-ca-certificates
 
