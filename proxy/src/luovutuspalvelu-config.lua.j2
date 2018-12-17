@@ -1,0 +1,17 @@
+local mymodule = {}
+local cjson = require "cjson"
+local iputils = require "iputils"
+
+mymodule.clientList = cjson.decode([=[ {{ clientListString|safe }} ]=])
+
+for i, c in ipairs(mymodule.clientList) do
+  c.ipsParsed = iputils.parse_cidrs(c.ips)
+end
+
+mymodule.clientAuthorizations = {}
+{% for user, password in passwords.items() -%}
+{% set basicAuthTmp = user + ':' + password -%}
+mymodule.clientAuthorizations["{{user}}"] = "{{ basicAuthTmp | b64encode }}"
+{% endfor %}
+
+return mymodule

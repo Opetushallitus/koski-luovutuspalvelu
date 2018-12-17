@@ -16,6 +16,7 @@ RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates
   && echo "vrkrootc.crt" >> /etc/ca-certificates.conf \
   && update-ca-certificates
 
-COPY src/entrypoint.sh src/get-config-from-aws.py src/setup-certs.py src/build-nginx-conf.py src/nginx.conf.j2 src/passwords.conf.j2 /etc/nginx/
+COPY src/entrypoint.sh src/get-config-from-aws.py src/setup-certs.py src/build-nginx-conf.py src/nginx.conf.j2 src/build-luovutuspalvelu-config-lua.py src/luovutuspalvelu-config.lua.j2 /etc/nginx/
+COPY src/iputils.lua /usr/local/openresty/site/lualib/
 COPY target/buildversion.txt /etc/nginx/html/koski-luovutuspalvelu/
 CMD ["/bin/bash", "-c", "/etc/nginx/entrypoint.sh"]
