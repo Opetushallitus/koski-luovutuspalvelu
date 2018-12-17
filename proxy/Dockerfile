@@ -1,4 +1,4 @@
-FROM nginx:1.15
+FROM openresty/openresty:stretch
 
 EXPOSE 443
 
