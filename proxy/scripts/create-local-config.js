@@ -22,8 +22,8 @@ const config = {
     {subjectDn: 'CN=client123.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32', '192.168.2.2/32'], user: 'clientuser123'}
   ],
   passwords: {
-    'clientUser': 'dummy123',
-    'clientUser123': 'dummy456'
+    'clientuser': 'dummy123',
+    'clientuser123': 'dummy456'
   },
   testLogging: true
 }

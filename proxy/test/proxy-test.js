@@ -102,7 +102,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property(
         'koskiMock.headers.authorization',
-        'Basic ' + Buffer.from('clientUser:dummy123').toString('base64')
+        'Basic ' + Buffer.from('clientuser:dummy123').toString('base64')
       )
     })
 
@@ -196,7 +196,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.body).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
       expect(res.body).to.have.nested.property(
         'koskiMock.headers.authorization',
-        'Basic ' + Buffer.from('clientUser:dummy123').toString('base64')
+        'Basic ' + Buffer.from('clientuser:dummy123').toString('base64')
       )
     })
   })
