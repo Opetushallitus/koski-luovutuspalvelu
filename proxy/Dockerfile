@@ -1,9 +1,16 @@
-FROM openresty/openresty:stretch
+FROM debian:stretch-slim
 
 EXPOSE 443
 
-RUN apt-get update \
-  && apt-get install --no-install-recommends --no-install-suggests -y python python-pip openssl ca-certificates \
+COPY src/openresty-pubkey.gpg /tmp/
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y gnupg2 \
+  && DEBIAN_FRONTEND=noninteractive apt-key add /tmp/openresty-pubkey.gpg \
+  && echo "deb http://openresty.org/package/debian stretch openresty" >> /etc/apt/sources.list \
+  && DEBIAN_FRONTEND=noninteractive apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python python-pip openssl ca-certificates openresty \
+  && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge gnupg2 \
+  && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
   && pip install --no-cache-dir boto3 \
   && rm -rf /var/lib/apt/lists/*
 
