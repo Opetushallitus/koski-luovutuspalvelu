@@ -48,6 +48,11 @@ const gotWithClientCert3 = gotWithoutClientCert.extend({
   cert: fs.readFileSync(__dirname + '/testca/certs/client3.crt'),
 })
 
+const gotWithClientCert4 = gotWithoutClientCert.extend({
+  key: fs.readFileSync(__dirname + '/testca/private/client4.key'),
+  cert: fs.readFileSync(__dirname + '/testca/certs/client4.crt'),
+})
+
 const gotWithSelfSignedClientCert = gotWithoutClientCert.extend({
   key: fs.readFileSync(__dirname + '/testca/private/selfsigned.key'),
   cert: fs.readFileSync(__dirname + '/testca/certs/selfsigned.crt'),
@@ -189,16 +194,27 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownIpAddress')
       expect(res.body).to.have.nested.property('0.key', 'unauthorized.unknownIpAddress')
     })
+  })
 
-    it('proxying works for /koski/api/palveluvayla, too', async () => {
+  describe('/koski/api/palveluvayla', () => {
+
+    it('proxying is not allowed if xroadSecurityServer flag is not set', async () => {
       const res = await gotWithClientCert('/koski/api/palveluvayla/soapSomething', {json: true})
+      expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.xroadSecurityServerOnly')
+      expect(res.body).to.have.nested.property('0.key', 'unauthorized.xroadSecurityServerOnly')
+    })
+
+    it('proxying works if xroadSecurityServer flag is set', async () => {
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomething', {json: true})
       expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
       expect(res.body).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
       expect(res.body).to.have.nested.property(
         'koskiMock.headers.authorization',
-        'Basic ' + Buffer.from('clientuser:dummy123').toString('base64')
+        'Basic ' + Buffer.from('clientuser4:dummy789').toString('base64')
       )
     })
+
   })
 
   describe('other URLs', () => {

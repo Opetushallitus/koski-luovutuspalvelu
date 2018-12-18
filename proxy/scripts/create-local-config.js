@@ -19,11 +19,13 @@ const config = {
   clientList: [
     {subjectDn: 'CN=client.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'clientuser'},
     {subjectDn: 'CN=client3.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32'], user: 'clientuser'},
-    {subjectDn: 'CN=client123.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32', '192.168.2.2/32'], user: 'clientuser123'}
+    {subjectDn: 'CN=client123.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32', '192.168.2.2/32'], user: 'clientuser123'},
+    {subjectDn: 'CN=client4.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'clientuser4', xroadSecurityServer: true}
   ],
   passwords: {
     'clientuser': 'dummy123',
-    'clientuser123': 'dummy456'
+    'clientuser123': 'dummy456',
+    'clientuser4': 'dummy789'
   },
   testLogging: true
 }
