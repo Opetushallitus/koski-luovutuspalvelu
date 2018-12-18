@@ -15,8 +15,8 @@ fi
 
 echo Setting up certificates
 python /etc/nginx/setup-certs.py
-echo Building nginx.conf
-python /etc/nginx/build-nginx-conf.py
+
+ln -sf /usr/local/openresty/nginx/conf/mime.types /etc/nginx/
 
 echo Starting Nginx
-exec nginx -g 'daemon off;'
+exec /usr/local/openresty/nginx/sbin/nginx -c /etc/nginx/nginx.conf -g 'daemon off;'
