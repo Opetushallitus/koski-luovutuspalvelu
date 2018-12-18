@@ -16,6 +16,9 @@ fi
 echo Setting up certificates
 python /etc/nginx/setup-certs.py
 
+echo Setting up DNS
+echo resolver $(awk 'BEGIN{ORS=" "} $1=="nameserver" {print $2}' /etc/resolv.conf) ";" > /etc/nginx/resolvers.conf
+
 ln -sf /usr/local/openresty/nginx/conf/mime.types /etc/nginx/
 
 echo Starting Nginx
