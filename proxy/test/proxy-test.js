@@ -10,7 +10,7 @@ const proxyPort = 7022
 const koskiMockPort = 7023
 
 const koskiMockApp = express()
-koskiMockApp.get('/*', (req, res) => {
+koskiMockApp.all('/*', (req, res) => {
   // uncomment this to debug test failures
   // console.log(`koskiMockApp: ${req.url}`, req.headers)
   if (req.originalUrl.includes('notfound')) {
@@ -30,6 +30,7 @@ const gotWithoutClientCert = gotModule.extend({
   baseUrl,
   throwHttpErrors: false,
   followRedirect: false,
+  retry: {retries: 0},
   ca: fs.readFileSync(__dirname + '/testca/certs/root-ca.crt')
 })
 
@@ -53,10 +54,44 @@ const gotWithClientCert4 = gotWithoutClientCert.extend({
   cert: fs.readFileSync(__dirname + '/testca/certs/client4.crt'),
 })
 
+const gotWithClientCert5 = gotWithoutClientCert.extend({
+  key: fs.readFileSync(__dirname + '/testca/private/client5.key'),
+  cert: fs.readFileSync(__dirname + '/testca/certs/client5.crt'),
+})
+
 const gotWithSelfSignedClientCert = gotWithoutClientCert.extend({
   key: fs.readFileSync(__dirname + '/testca/private/selfsigned.key'),
   cert: fs.readFileSync(__dirname + '/testca/certs/selfsigned.crt'),
 })
+
+const exampleSoapRequest = `
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xrd="http://x-road.eu/xsd/xroad.xsd" xmlns:id="http://x-road.eu/xsd/identifiers">
+  <SOAP-ENV:Header>
+      <xrd:client id:objectType="SUBSYSTEM">
+          <id:xRoadInstance>FI-TEST</id:xRoadInstance>
+          <id:memberClass>GOV</id:memberClass>
+          <id:memberCode>0245437-2</id:memberCode>
+          <id:subsystemCode>ServiceViewClient</id:subsystemCode>
+      </xrd:client>
+      <xrd:service id:objectType="SERVICE">
+         <id:xRoadInstance>FI-TEST</id:xRoadInstance>
+         <id:memberClass>GOV</id:memberClass>
+         <id:memberCode>2769790-1</id:memberCode>
+         <id:subsystemCode>koski</id:subsystemCode>
+         <id:serviceCode>suomiFiRekisteritiedot</id:serviceCode>
+         <id:serviceVersion>v1</id:serviceVersion>
+      </xrd:service>
+      <xrd:protocolVersion>4.0</xrd:protocolVersion>
+      <xrd:id>ID123</xrd:id>
+      <xrd:userId>ID456</xrd:userId>
+   </SOAP-ENV:Header>
+   <SOAP-ENV:Body>
+     <ns1:suomiFiRekisteritiedot xmlns:ns1="http://docs.koski-xroad.fi/producer">
+       <ns1:hetu>010280-952L</ns1:hetu>
+     </ns1:suomiFiRekisteritiedot>
+   </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+`
 
 describe('koski-luovutuspalvelu proxy', () => {
 
@@ -194,6 +229,14 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownIpAddress')
       expect(res.body).to.have.nested.property('0.key', 'unauthorized.unknownIpAddress')
     })
+
+    it('returns graceful error when password is missing from config', async function () {
+      const res = await gotWithClientCert5('/koski/api/luovutuspalvelu/missing', {json: true})
+      expect(res.statusCode).to.equal(500)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=internalError.missingPassword')
+      expect(res.body).to.have.nested.property('0.key', 'internalError.missingPassword')
+    })
+
   })
 
   describe('/koski/api/palveluvayla', () => {
@@ -206,14 +249,46 @@ describe('koski-luovutuspalvelu proxy', () => {
     })
 
     it('proxying works if xroadSecurityServer flag is set', async () => {
-      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomething', {json: true})
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomething', {method: 'POST', body: exampleSoapRequest, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(200)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
-      expect(res.body).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
-      expect(res.body).to.have.nested.property(
+      const bodyJson = JSON.parse(res.body)
+      expect(bodyJson).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
+      expect(bodyJson).to.have.nested.property(
         'koskiMock.headers.authorization',
-        'Basic ' + Buffer.from('clientuser4:dummy789').toString('base64')
+        'Basic ' + Buffer.from('clientuser5:dummy321').toString('base64')
       )
     })
+
+    it('requires known xroad client', async () => {
+      const requestBody = exampleSoapRequest.replace('ServiceViewClient', 'UnknownClient')
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomething', {method: 'POST', body: requestBody, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownXroadClient')
+      const bodyJson = JSON.parse(res.body)
+      expect(bodyJson).to.have.nested.property('0.key', 'unauthorized.unknownXroadClient')
+    })
+
+    it('does not accept GET method', async () => {
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/getSoapSomething', {method: 'GET'})
+      expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.method')
+    })
+
+    it('does not accept invalid XML', async () => {
+      const requestBody = '{"thisIsNotXml": true}'
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomethingNotXml', {method: 'POST', body: requestBody, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(400)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=badRequest')
+    })
+
+    it('does not accept missing subsystemCode', async () => {
+      const requestBody = exampleSoapRequest.replace(/id:subsystemCode/g, 'id:somethingCode')
+      const res = await gotWithClientCert4('/koski/api/palveluvayla/soapSomething', {method: 'POST', body: requestBody, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(400)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=badRequest')
+    })
+
 
   })
 

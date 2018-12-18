@@ -18,11 +18,14 @@ RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates
 
 ADD \
   https://raw.githubusercontent.com/hamishforbes/lua-resty-iputils/0fb338577eeccd192df4c78bb27a083f481a7a6f/lib/resty/iputils.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/xmlhandler/tree.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/XmlParser.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/xml2lua.lua \
   /usr/local/openresty/site/lualib/
 RUN chmod a+r /usr/local/openresty/site/lualib/*.lua
 
 COPY src/entrypoint.sh src/get-config-from-aws.py src/setup-certs.py src/nginx.conf /etc/nginx/
-COPY src/luovutuspalvelu-config.lua /usr/local/openresty/site/lualib/
+COPY src/luovutuspalvelu-config.lua src/xroad-soap-util.lua /usr/local/openresty/site/lualib/
 COPY target/buildversion.txt /etc/nginx/html/koski-luovutuspalvelu/
 
 CMD ["/bin/bash", "-c", "/etc/nginx/entrypoint.sh"]

@@ -41,6 +41,13 @@ except:
     print 'Parsing /clientList failed'
     raise
 
+xroadClientsString = requiredParameter('/xroadClients')
+try:
+    config['xroadClients'] = json.loads(xroadClientsString)
+except:
+    print 'Parsing /xroadClients failed'
+    raise
+
 try:
     config['passwords'] = getParametersByPath('/passwords/')
 except:

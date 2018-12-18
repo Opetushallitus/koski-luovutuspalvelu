@@ -40,6 +40,10 @@ openssl genrsa -out private/client4.key 2048
 openssl req -config openssl.cnf -key private/client4.key -new -sha256 -out csr/client4.req -subj '/C=FI/O=Testi/CN=client4.example.com'
 openssl ca -config openssl.cnf -in csr/client4.req -out certs/client4.crt -extensions server_cert -notext -batch
 
+openssl genrsa -out private/client5.key 2048
+openssl req -config openssl.cnf -key private/client5.key -new -sha256 -out csr/client5.req -subj '/C=FI/O=Testi/CN=client5.example.com'
+openssl ca -config openssl.cnf -in csr/client5.req -out certs/client5.crt -extensions server_cert -notext -batch
+
 openssl genrsa -out private/selfsigned.key 2048
 openssl req -config openssl.cnf -key private/selfsigned.key \
     -new -x509 -days 3650 -sha256 -extensions server_cert \
