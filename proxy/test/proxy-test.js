@@ -230,7 +230,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.body).to.have.nested.property('0.key', 'unauthorized.unknownIpAddress')
     })
 
-    it('returns graceful error when password is missing from config', async function () {
+    it('returns graceful error when password is missing from config', async () => {
       const res = await gotWithClientCert5('/koski/api/luovutuspalvelu/missing', {json: true})
       expect(res.statusCode).to.equal(500)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=internalError.missingPassword')

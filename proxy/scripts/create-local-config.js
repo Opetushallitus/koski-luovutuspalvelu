@@ -20,7 +20,7 @@ const config = {
     {subjectDn: 'CN=client.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'clientuser'},
     {subjectDn: 'CN=client3.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32'], user: 'clientuser'},
     {subjectDn: 'CN=client123.example.com,O=Testi,C=FI', ips: ['192.168.1.1/32', '192.168.2.2/32'], user: 'clientuser123'},
-    {subjectDn: 'CN=client4.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'clientuser4', xroadSecurityServer: true},
+    {subjectDn: 'CN=client4.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], xroadSecurityServer: true},
     {subjectDn: 'CN=client5.example.com,O=Testi,C=FI', ips: ['0.0.0.0/0'], user: 'missingpassword'}
   ],
   xroadClients: {
