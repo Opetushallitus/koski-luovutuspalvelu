@@ -40,3 +40,7 @@ COPY src/luovutuspalvelu-config.lua src/xroad-soap-util.lua /usr/local/openresty
 COPY target/buildversion.txt /etc/nginx/html/koski-luovutuspalvelu/
 
 CMD ["/bin/bash", "-c", "/etc/nginx/entrypoint.sh"]
+
+# Use SIGQUIT instead of default SIGTERM to cleanly drain requests
+# See https://github.com/openresty/docker-openresty/blob/master/README.md#tips--pitfalls
+STOPSIGNAL SIGQUIT
