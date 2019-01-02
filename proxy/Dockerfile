@@ -2,6 +2,7 @@ FROM debian:stretch-slim
 
 EXPOSE 443
 
+# Based on https://github.com/openresty/docker-openresty/blob/master/stretch/Dockerfile
 COPY src/openresty-pubkey.gpg /tmp/
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y gnupg2 \
@@ -23,6 +24,9 @@ RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates
   && echo "vrkrootc.crt" >> /etc/ca-certificates.conf \
   && update-ca-certificates
 
+# Download lua-resty-iputils and xml2lua libraries
+# https://github.com/hamishforbes/lua-resty-iputils
+# https://github.com/manoelcampos/xml2lua
 ADD \
   https://raw.githubusercontent.com/hamishforbes/lua-resty-iputils/0fb338577eeccd192df4c78bb27a083f481a7a6f/lib/resty/iputils.lua \
   https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/xmlhandler/tree.lua \
@@ -36,3 +40,7 @@ COPY src/luovutuspalvelu-config.lua src/xroad-soap-util.lua /usr/local/openresty
 COPY target/buildversion.txt /etc/nginx/html/koski-luovutuspalvelu/
 
 CMD ["/bin/bash", "-c", "/etc/nginx/entrypoint.sh"]
+
+# Use SIGQUIT instead of default SIGTERM to cleanly drain requests
+# See https://github.com/openresty/docker-openresty/blob/master/README.md#tips--pitfalls
+STOPSIGNAL SIGQUIT

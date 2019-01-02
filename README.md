@@ -1,13 +1,24 @@
 # Koski luovutuspalvelu
 
-Luovutuspalvelu toimii proxynä viranomaisten järjestelmien ja Kosken
-välillä.  Sen tehtävä on autentikoida viranomaisten API-kutsut
+Luovutuspalvelu toimii proxynä Kosken ja viranomaisten järjestelmien tai
+palveluväylän liityntäpalvelimen välillä. Sen tehtävä on autentikoida
+sisääntulevat API-kutsut (viranomaiselta tai liityntäpalvelimelta)
 varmenteella (client certificate) ja rajata pyynnöt tiettyihin
-IP-osoitteisiin.
+IP-osoitteisiin. 
 
-Kosken suuntaan proxy lisää pyyntöön kyseisen viranomaisen
-palvelukäyttäjän käyttäjätunnuksen/salasanan (viranomainen ei siis
-itse tiedä tätä salasanaa).
+Kosken suuntaan proxy lisää pyyntöön oikean tahon palvelukäyttäjän käyttäjätunnuksen
+ja salasanan (jotka löytyvät proxyn konffeista - kutsuja ei siis itse tiedä niitä):
+
+* Palveluväylän tapauksessa proxy parsii sisääntulevasta SOAP-pyynnöstä X-Road
+  `<client>` elementin, ja valitsee oikean palvelukäyttäjän kutsujan tunnisteen 
+  (esim. `SUBSYSTEM:FI.GOV.12345-6.ConsumerService`) perusteella.
+* Muussa tapauksessa palvelukäyttäjä valitaan varmenteen subject-nimen
+  (esim. `CN=client.example.com,O=Testi,C=FI`) perusteella. 
+
+Koskelle kutsu näkyy normaalina HTTP basic authentication API-kutsuna, eikä
+Kosken tarvitse tietää mitään client certificateista, IP-rajauksista tai
+palveluväylän clienteistä. HTTP-pyynnön ja vastauksen body (yleensä JSON tai SOAP)
+proxytetään sellaisenaan.
 
 Proxyllä on myös kiinteät IP-osoitteet, jotta viranomainen voi omassa
 järjestelmässään helpommin rajata ulosmenevää liikennettä.
@@ -15,16 +26,16 @@ järjestelmässään helpommin rajata ulosmenevää liikennettä.
 <pre>
 +--------------+                 +-------------+   +-----------------+               +------------+   +------------------+
 |              |+                | AWS Network |   |      Koski      |               |   Koski    |   |      Koski       |+
-| viranomainen +--- - - - - - -->+    Load     +-->+ luovutuspalvelu +-- - - - - - ->+  haproxy   +---+ sovelluspalvelin ||
-|              ||  HTTPS +       |  Balancer   |   |  proxy (Nginx)  |  HTTPS +      | (Cybercom) |   |    (Cybercom)    ||
-+--------------+|  client cert   +-------------+   +--------+--------+  basic auth   +------------+   +------------------+|
- +--------------+                 (kiinteät IP:)            |                                          +------------------+
-                                                            |
-                                                      +-----+-----+
-                                                      |    AWS    |   Luovutuspalvelun konfiguraatio
-                                                      | Parameter |   (mm. sallitut viranomaisten varmenteet ja IP:t,
-                                                      |   Store   |   palvelimen varmenne ja private key)
-                                                      +-----+-----+
+| viranomainen +--+ - - - - - -->+    Load     +-->+ luovutuspalvelu +-- - - - - - ->+  haproxy   +---+ sovelluspalvelin ||
+|              || |  HTTPS +     |  Balancer   |   |  proxy (Nginx)  |  HTTPS +      | (Cybercom) |   |    (Cybercom)    ||
++--------------+| |  client      +-------------+   +--------+--------+  basic auth   +------------+   +------------------+|
+ +--------------+ |  certificate  (kiinteät IP:)            |                                          +------------------+
+                  |                                         |
++--------------+  |                                   +-----+-----+
+| palveluväylä |  |                                   |    AWS    |   Luovutuspalvelun konfiguraatio
+|   liityntä-  +--+                                   | Parameter |   (mm. sallitut viranomaisten varmenteet ja IP:t,
+|   palvelin   |                                      |   Store   |   palvelimen varmenne ja private key)
++--------------+                                      +-----+-----+
                                                             ^
                                                             |
                                                    +--------+--------+
