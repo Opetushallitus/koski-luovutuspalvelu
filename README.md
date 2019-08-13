@@ -70,6 +70,7 @@ Docker-imagen buildaus ja testien ajo paikallisesti:
     cd proxy
     npm run local
     # eri terminaali-ikkunassa:
+    npm install
     npm run test
 
 Joskus voi olla hyödyllistä katsoa shellistä mitä ajossa olevassa kontissa tapahtuu:
