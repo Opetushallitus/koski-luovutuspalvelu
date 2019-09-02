@@ -4,8 +4,10 @@ import os
 import shutil
 import boto3
 import certbot.main
+import json
 
-# Temp dir 
+
+# Temp dir
 CERTBOT_DIR = '/tmp/certbot'
 
 def obtain_certs(domain, use_staging):
@@ -46,13 +48,28 @@ def upload_certs(domain, parameter_prefix):
     client.put_parameter(Name=fullchain_parameter, Value=fullchain, Type='String', Overwrite=True)
     print 'Uploading to', privkey_parameter
     client.put_parameter(Name=parameter_prefix + '/proxyPrivateKey', Value=privkey, Type='SecureString', Overwrite=True)
-    
-domain = os.environ['CERTBOT_DOMAIN']
-if domain.endswith('.'):
-    domain = domain[:-1]
-parameter_prefix = os.environ['ENVIRONMENT_PARAMETER_PREFIX']
-use_staging = os.environ.get('CERTBOT_PRODUCTION') != 'yes'
-print 'Obtaining certificate for', domain
-obtain_certs(domain, use_staging)
-upload_certs(domain, parameter_prefix)
-print 'Done'
+
+
+try:
+    domain = os.environ['CERTBOT_DOMAIN']
+    if domain.endswith('.'):
+        domain = domain[:-1]
+    parameter_prefix = os.environ['ENVIRONMENT_PARAMETER_PREFIX']
+    use_staging = os.environ.get('CERTBOT_PRODUCTION') != 'yes'
+    print 'Obtaining certificate for', domain
+    obtain_certs(domain, use_staging)
+    upload_certs(domain, parameter_prefix)
+    print 'Done'
+
+except Exception, e:
+    print 'Failed to update certificate: ' + str(e)
+    sns = boto3.client('sns')
+    sns.publish(
+        TopicArn=os.environ['SNS_TOPIC_ARN'],
+        Message=json.dumps({
+            'AlarmName': "Luovutuspalvelu certificate update failed",
+            'NewStateValue': 'FAILURE',
+            'NewStateReason': 'Certbot failed with exception',
+            'AlarmDescription': 'Failed to renew Luovutuspalvelu SSL certificate: ' + str(e)
+        }),
+    )
