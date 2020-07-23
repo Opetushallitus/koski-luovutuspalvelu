@@ -102,6 +102,6 @@ ja talleta se oph-koski-dev AWS-ympäristön "/local-certbot-test" polkuun
 
 ## Linkkejä
 
-Tarkemmat ylläpito-ohjeet löytyvät koski-env/documentation/ kansiosta.
+Tarkemmat ylläpito-ohjeet löytyvät [koski-env/documentation/ kansiosta](https://github.com/Opetushallitus/koski-aws-infra/tree/master/koski-legacy-env/documentation).
 
 Travis CI: https://travis-ci.org/Opetushallitus/koski-luovutuspalvelu
