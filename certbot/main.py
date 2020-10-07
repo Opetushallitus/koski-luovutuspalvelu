@@ -37,16 +37,16 @@ def obtain_certs(domain, use_staging):
 def upload_certs(domain, parameter_prefix):
     fullchain_file = os.path.join(CERTBOT_DIR, 'live', domain, 'fullchain.pem')
     privkey_file = os.path.join(CERTBOT_DIR, 'live', domain, 'privkey.pem')
-    print 'Reading', fullchain_file, 'and', privkey_file
+    print(f'Reading {fullchain_file} and {privkey_file}')
     fullchain = open(fullchain_file).read()
     privkey = open(privkey_file).read()
 
     client = boto3.client('ssm')
     fullchain_parameter = parameter_prefix + '/proxyCertificate'
     privkey_parameter = parameter_prefix + '/proxyPrivateKey'
-    print 'Uploading to', fullchain_parameter
+    print(f'Uploading to {fullchain_parameter}')
     client.put_parameter(Name=fullchain_parameter, Value=fullchain, Type='String', Overwrite=True)
-    print 'Uploading to', privkey_parameter
+    print(f'Uploading to {privkey_parameter}')
     client.put_parameter(Name=parameter_prefix + '/proxyPrivateKey', Value=privkey, Type='SecureString', Overwrite=True)
 
 
@@ -56,13 +56,13 @@ try:
         domain = domain[:-1]
     parameter_prefix = os.environ['ENVIRONMENT_PARAMETER_PREFIX']
     use_staging = os.environ.get('CERTBOT_PRODUCTION') != 'yes'
-    print 'Obtaining certificate for', domain
+    print(f'Obtaining certificate for {domain}')
     obtain_certs(domain, use_staging)
     upload_certs(domain, parameter_prefix)
-    print 'Done'
+    print('Done')
 
-except Exception, e:
-    print 'Failed to update certificate: ' + str(e)
+except Exception as e:
+    print(f'Failed to update certificate: {str(e)}')
     sns = boto3.client('sns')
     sns.publish(
         TopicArn=os.environ['SNS_TOPIC_ARN'],
