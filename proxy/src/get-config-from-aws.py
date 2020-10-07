@@ -12,7 +12,7 @@ def requiredParameter(name):
         res = client.get_parameter(Name=full_name, WithDecryption=True)
         return res['Parameter']['Value']
     except:
-        print 'Getting parameter failed', full_name
+        print('Getting parameter failed {full_name}')
         raise
 
 def getParametersByPath(path):
@@ -32,26 +32,26 @@ config = {
 }
 
 extraCaCertificatesDict = getParametersByPath('/extraCaCertificates')
-config['extraCaCertificates'] = extraCaCertificatesDict.values()
+config['extraCaCertificates'] = list(extraCaCertificatesDict.values())
 
 clientListString = requiredParameter('/clientList')
 try:
     config['clientList'] = json.loads(clientListString)
 except:
-    print 'Parsing /clientList failed'
+    print('Parsing /clientList failed')
     raise
 
 xroadClientsString = requiredParameter('/xroadClients')
 try:
     config['xroadClients'] = json.loads(xroadClientsString)
 except:
-    print 'Parsing /xroadClients failed'
+    print('Parsing /xroadClients failed')
     raise
 
 try:
     config['passwords'] = getParametersByPath('/passwords/')
 except:
-    print 'Parsing /passwords failed'
+    print('Parsing /passwords failed')
     raise
 
 json.dump(config, open('/etc/nginx/koski-luovutuspalvelu-proxy-config.json', 'w'), indent=2)

@@ -9,10 +9,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-key add /tmp/openresty-pubkey.gpg \
   && echo "deb http://openresty.org/package/debian stretch openresty" >> /etc/apt/sources.list \
   && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python python-pip openssl ca-certificates openresty \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3 python3-pip python3-setuptools openssl ca-certificates openresty \
   && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge gnupg2 \
   && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
-  && pip install --no-cache-dir boto3 \
+  && pip3 install --no-cache-dir boto3 \
   && rm -rf /var/lib/apt/lists/*
 
 # Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://eevertti.vrk.fi/ca-varmenteet

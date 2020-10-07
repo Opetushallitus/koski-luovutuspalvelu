@@ -7,17 +7,17 @@ if [ -e /etc/nginx/koski-luovutuspalvelu-proxy-config.json ]; then
   echo "Using existing configuration file"
 elif [ ! -z "$ENVIRONMENT_PARAMETER_PREFIX" ]; then
   echo "Getting configuration from parameter store prefix $ENVIRONMENT_PARAMETER_PREFIX"
-  python /etc/nginx/get-config-from-aws.py
+  python3 /etc/nginx/get-config-from-aws.py
 else
   echo "Configuration for koski-luovutuspalvelu-proxy missing"
   exit 1
 fi
 
 echo Setting up certificates
-python /etc/nginx/setup-certs.py
+python3 /etc/nginx/setup-certs.py
 
 echo Setting up DNS
-echo resolver $(awk 'BEGIN{ORS=" "} $1=="nameserver" {print $2}' /etc/resolv.conf) ";" > /etc/nginx/resolvers.conf
+echo resolver $(awk 'BEGIN{ORS=" "} $1=="nameserver" {print $2}' /etc/resolv.conf) ";" >/etc/nginx/resolvers.conf
 
 ln -sf /usr/local/openresty/nginx/conf/mime.types /etc/nginx/
 
