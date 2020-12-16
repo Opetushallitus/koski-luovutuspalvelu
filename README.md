@@ -24,12 +24,12 @@ Proxyllä on myös kiinteät IP-osoitteet, jotta viranomainen voi omassa
 järjestelmässään helpommin rajata ulosmenevää liikennettä.
 
 <pre>
-+--------------+                 +-------------+   +-----------------+               +------------+   +------------------+
-|              |+                | AWS Network |   |      Koski      |               |   Koski    |   |      Koski       |+
-| viranomainen +--+ - - - - - -->+    Load     +-->+ luovutuspalvelu +-- - - - - - ->+  haproxy   +---+ sovelluspalvelin ||
-|              || |  HTTPS +     |  Balancer   |   |  proxy (Nginx)  |  HTTPS +      | (Cybercom) |   |    (Cybercom)    ||
-+--------------+| |  client      +-------------+   +--------+--------+  basic auth   +------------+   +------------------+|
- +--------------+ |  certificate  (kiinteät IP:)            |                                          +------------------+
++--------------+                 +-------------+   +-----------------+               +---------------+   +------------------+
+|              |+                | AWS Network |   |      Koski      |               |      AWS      |   |      Koski       |+
+| viranomainen +--+ - - - - - -->+    Load     +-->+ luovutuspalvelu +-- - - - - - ->+  Application  +---+ sovelluspalvelin ||
+|              || |  HTTPS +     |  Balancer   |   |  proxy (Nginx)  |  HTTPS +      | Load Balancer |   |      (AWS)       ||
++--------------+| |  client      +-------------+   +--------+--------+  basic auth   +---------------+   +------------------+|
+ +--------------+ |  certificate  (kiinteät IP:)            |                                             +------------------+
                   |                                         |
 +--------------+  |                                   +-----+-----+
 | palveluväylä |  |                                   |    AWS    |   Luovutuspalvelun konfiguraatio
