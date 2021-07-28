@@ -9,7 +9,7 @@ services:
 cache:
   directories:
     - proxy/node_modules
-    - $HOME/.cache/pip
+    - $HOME/.cache/pip3
 
 env:
   global:
@@ -21,9 +21,9 @@ env:
     - secure: "VVDo7xABHj/ED7OYyFAyjhzIcbxNlrug5Ha6NGtP1yS4X5q1tTqu5FLY/SMCxYur+ay6svK5zNcR515rtPKKC0VS4tobTuoqA8KqiMQWQjaEc46WrQNs2U11FC/uLJxX3yVHTN2NLAxA3GRTHBt5sg2FAUJIVUs4NSXqVKg7/uFcj8EwIJyyN+IQb/tKFY3+S2SxjSa5TIYtOgnkIk6W+H2DNUW/NkOHyzDgaFtCEZ9O/wG6h5vSwuYjf9patZrkeEnFIz5ipL3RaFUhhnHvUL62u6RO3TCS+eb+9ZfKBHRw6G7/FjoDxZqvSojfnzOLt30PKJdgl0ZoaDjNd3d2GuO6OafNVdT+Rqa0gaj8rEjsZz4nAAt55QXBe1+rrlBb2JGFcKeQj5ag7BQ3JC98mN6dBDONqncmD42zwleO1u/MmQRQlgLQNaFtUyB2HJBZWxke6ygMJFyb9XANj6bYxcyYICeevUmCIeBgbC2Hei3c4TfnoapQsAHm0hecXyiq3UiJx9/VelbkTj3LfJk30OgFrikp8k7MLbRXkabIhSI0+/aBxkj9xjo2OYI8Qc5WNUxiT3Kx/tum/D0roNXWTuu8cP/AqGbAXsf6p+PE2h7SrArq4mwGoZ7o0wKrmXmo72EJTpRE1d5vFdwtFhnPkD7suT0ZNBqFUyn3gMauzt4="
 
 before_install:
-  - pip install --user awscli
+  - pip3 install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  
+
 install:
   - cd $TRAVIS_BUILD_DIR/proxy
   - npm install
@@ -40,7 +40,7 @@ script:
   - docker run --name koski-luovutuspalvelu-proxy -p 7022:443 -v `pwd`/target/koski-luovutuspalvelu-proxy-config-ci.json:/etc/nginx/koski-luovutuspalvelu-proxy-config.json:ro -d -m 256m koski-luovutuspalvelu-proxy:latest
   - sleep 5
   - npm run test
-  
+
 after_script:
   - docker logs koski-luovutuspalvelu-proxy
   - docker stop -t 5 koski-luovutuspalvelu-proxy
