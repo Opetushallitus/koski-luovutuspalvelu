@@ -220,7 +220,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       const res = await gotWithSelfSignedClientCert('/koski/api/luovutuspalvelu/self', {json: true})
       expect(res.statusCode).to.equal(400)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.sslCertificateError')
-      expect(res.body).to.deep.equal([{"key": "unauthorized.sslCertificateError", "message": "FAILED:unable to verify the first certificate"}])
+      expect(res.body).to.deep.equal([{"key": "unauthorized.sslCertificateError", "message": "FAILED:self signed certificate"}])
     })
 
     it('does not accept connections from unknown IP address', async () => {
