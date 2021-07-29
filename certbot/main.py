@@ -45,9 +45,9 @@ def upload_certs(domain, parameter_prefix):
     fullchain_parameter = parameter_prefix + '/proxyCertificate'
     privkey_parameter = parameter_prefix + '/proxyPrivateKey'
     print(f'Uploading to {fullchain_parameter}')
-    client.put_parameter(Name=fullchain_parameter, Value=fullchain, Type='String', Overwrite=True)
+    client.put_parameter(Name=fullchain_parameter, Value=fullchain, Type='String', Overwrite=True, Tier='Intelligent-Tiering')
     print(f'Uploading to {privkey_parameter}')
-    client.put_parameter(Name=parameter_prefix + '/proxyPrivateKey', Value=privkey, Type='SecureString', Overwrite=True)
+    client.put_parameter(Name=parameter_prefix + '/proxyPrivateKey', Value=privkey, Type='SecureString', Overwrite=True, Tier='Intelligent-Tiering')
 
 
 try:
