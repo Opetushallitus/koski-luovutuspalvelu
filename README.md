@@ -55,14 +55,14 @@ sertifikaatin ja private keyn DNS-nimelleen. Tätä varten
 Certbot-komponentti hakee sertifikaatin Let's Encryptistä ja tallettaa
 sen (ja private keyn) AWS Parameter Storeen. Oikeus domainiin validoidaan
 tekemällä muutos DNS:ään (Route53). Certbot on myöskin
-Docker-kontti, joka ajetaan ajastetusti parin kuukauden välein.
+Docker-kontti, joka ajetaan ajastetusti viikottain.
 
 ## Proxyn buildi ja ajaminen
 
 Minimissään tarvitset nämä:
 
  * Docker
- * Node.js (uusin 8.x sarjan + sen mukana tuleva NPM-versio)
+ * Node.js (uusin 16.x sarjan + sen mukana tuleva NPM-versio)
  * openssl komentorivityökalun (tulee yleensä mukana OSX:ssä/Linuxissa)
 
 Docker-imagen buildaus ja testien ajo paikallisesti:
