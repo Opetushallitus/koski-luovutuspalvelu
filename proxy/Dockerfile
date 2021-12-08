@@ -15,13 +15,21 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && pip3 install --no-cache-dir boto3 \
   && rm -rf /var/lib/apt/lists/*
 
-# Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://eevertti.vrk.fi/ca-varmenteet
+# Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://dvv.fi/ca-varmenteet
 WORKDIR /
-COPY src/vrksp3.crt src/vrkrootc.crt /tmp/
+COPY dvv-crt/* /tmp/
 RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates/vrksp3.crt -outform pem \
   && openssl x509 -in /tmp/vrkrootc.crt -inform der -out /usr/share/ca-certificates/vrkrootc.crt -outform pem \
+  && openssl x509 -in /tmp/dvvroot3ec.crt -inform der -out /usr/share/ca-certificates/dvvroot3ec.crt -outform pem \
+  && openssl x509 -in /tmp/dvvroot3rc.crt -inform der -out /usr/share/ca-certificates/dvvroot3rc.crt -outform pem \
+  && openssl x509 -in /tmp/dvvsp5ec.crt -inform der -out /usr/share/ca-certificates/dvvsp5ec.crt -outform pem \
+  && openssl x509 -in /tmp/dvvsp5rc.crt -inform der -out /usr/share/ca-certificates/dvvsprc.crt -outform pem \
   && echo "vrksp3.crt" >> /etc/ca-certificates.conf \
   && echo "vrkrootc.crt" >> /etc/ca-certificates.conf \
+  && echo "dvvroot3ec.crt" >> /etc/ca-certificates.conf \
+  && echo "dvvroot3rc.crt" >> /etc/ca-certificates.conf \
+  && echo "dvvsp5ec.crt" >> /etc/ca-certificates.conf \
+  && echo "dvvsp5rc.crt" >> /etc/ca-certificates.conf \
   && update-ca-certificates
 
 # Download lua-resty-iputils and xml2lua libraries
