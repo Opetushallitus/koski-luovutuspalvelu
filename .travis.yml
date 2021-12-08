@@ -1,8 +1,8 @@
 sudo: required
-dist: trusty
+dist: focal
 language: node_js
 node_js:
-  - "8"
+  - "16"
 services:
  - docker
 
@@ -21,7 +21,7 @@ env:
     - secure: "jrwFK0yeipUeWorQApMFHrc6xsPQAeucO4CRIdJAZnswBH3no7XjXBvueY1om/wREuIuSoUezRtz2nQ4kfE/r8qTOJi/OQb8XQk+LBjhoVjX3ATtFyt7UgdLBsH/8fsVtJih6P1AImMo92mn1Q36xE2BxJrSV5x+NUJHh6rSKP+JpEaeSpMv+M7BH3sxbLjGSlvRw2QDJl0dK9XKVsG4OdRNWO57Bjsd+8j75LXbjCnMnn8i3DjAK8CYr2JyWdgUfpMzyy6XPsv8U3hjVmuSyA7Yw5ACyxa95sKQunj1xiXASznVD0Ig9uB/ekEjr7vJzR8MNMzWHftVXSjLINSv1EkR+qPSA21uSD+y4NmMjq3xdwBPqoAoIddJ0co6GDkQPfPGf9Wsk2GXtFLk8WcytEp9967eZZhD2GJf0p7vOrBZi8NSI5Dbrpvu3WAS6CURYerjWizQ9D+1efBZmR01P7wXCG9tN8A5AZg/pJ7JviP7AUBFcdl8wNZ1SUFNR/e9oaNSNsmT1lE4qUb5L5jZ1a2iejyxJvlB8HJAIjBgazFq2F2b8q2rSyMYBo83PPhANe0DWS4IIJOfZNTLn47hKyrcKc4Jpd/8Q3nogrAFx9JcLaV8/NNwItCtVXT1MKX8MnPQOWv3lgJbiQPQHPiMcM++8hr+weGjxMCXwK04tfM="
 
 before_install:
-  - pyenv global 3.6
+  - pyenv global 3.8
   - pip3 install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
 
