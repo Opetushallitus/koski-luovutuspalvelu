@@ -4,16 +4,16 @@ Luovutuspalvelu toimii proxynä Kosken ja viranomaisten järjestelmien tai
 palveluväylän liityntäpalvelimen välillä. Sen tehtävä on autentikoida
 sisääntulevat API-kutsut (viranomaiselta tai liityntäpalvelimelta)
 varmenteella (client certificate) ja rajata pyynnöt tiettyihin
-IP-osoitteisiin. 
+IP-osoitteisiin.
 
 Kosken suuntaan proxy lisää pyyntöön oikean tahon palvelukäyttäjän käyttäjätunnuksen
 ja salasanan (jotka löytyvät proxyn konffeista - kutsuja ei siis itse tiedä niitä):
 
 * Palveluväylän tapauksessa proxy parsii sisääntulevasta SOAP-pyynnöstä X-Road
-  `<client>` elementin, ja valitsee oikean palvelukäyttäjän kutsujan tunnisteen 
+  `<client>` elementin, ja valitsee oikean palvelukäyttäjän kutsujan tunnisteen
   (esim. `SUBSYSTEM:FI.GOV.12345-6.ConsumerService`) perusteella.
 * Muussa tapauksessa palvelukäyttäjä valitaan varmenteen subject-nimen
-  (esim. `CN=client.example.com,O=Testi,C=FI`) perusteella. 
+  (esim. `CN=client.example.com,O=Testi,C=FI`) perusteella.
 
 Koskelle kutsu näkyy normaalina HTTP basic authentication API-kutsuna, eikä
 Kosken tarvitse tietää mitään client certificateista, IP-rajauksista tai
