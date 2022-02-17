@@ -18,11 +18,3 @@ for ARTIFACT_NAME in koski-luovutuspalvelu-proxy koski-luovutuspalvelu-certbot; 
 done
 
 echo "Images pushed to ECR"
-
-echo "Restarting..."
-aws lambda invoke \
-  --function-name 500150530292:koski-luovutuspalvelu-proxy-restart \
-  --payload '{"travisBuildNumber": "'$TRAVIS_BUILD_NUMBER'", "vcsRevision": "'$TRAVIS_COMMIT'"}' \
-  /dev/stdout
-
-echo "Deploy done."

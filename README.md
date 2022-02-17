@@ -104,4 +104,4 @@ ja talleta se oph-koski-dev AWS-ympäristön "/local-certbot-test" polkuun
 
 Tarkemmat [ylläpito-ohjeet](https://github.com/Opetushallitus/koski-aws-infra/blob/master/documentation/luovutuspalvelu.md).
 
-Travis CI: https://app.travis-ci.com/github/Opetushallitus/koski-luovutuspalvelu
+[Travis CI](https://app.travis-ci.com/github/Opetushallitus/koski-luovutuspalvelu)
