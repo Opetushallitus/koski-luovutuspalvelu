@@ -1,6 +1,7 @@
 const gotModule = require('got')
 const express = require('express')
 const fs = require('fs')
+const { spawn } = require('child_process')
 
 const expect = require('chai').expect
 
@@ -91,6 +92,27 @@ const exampleSoapRequest = `
    </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 `
+
+const getLatestLogEntry = () => new Promise((resolve, reject) => {
+  let stdout = ''
+  const logs = spawn('docker', ['logs', 'koski-luovutuspalvelu-proxy'])
+  logs.stdout.on('data', (data) => {
+    stdout = data.toString()
+  })
+  logs.on('exit', (code) => {
+    if (code === 0) {
+      try {
+        const lines = stdout.split('\n').filter(n => n.length > 0)
+        const lastLine = lines[lines.length - 1]
+        resolve(JSON.parse(lastLine))
+      } catch (e) {
+        reject('Invalid log entry')
+      }
+    } else {
+      reject(`Exit code ${code}`)
+    }
+  })
+})
 
 describe('koski-luovutuspalvelu proxy', () => {
 
@@ -317,6 +339,11 @@ describe('koski-luovutuspalvelu proxy', () => {
       const res = await gotWithoutClientCert(baseUrl.replace('https:', 'http:'))
       expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
       expect(res.statusCode).to.equal(404)
+    })
+    it('masks sensitive information in access log', async () => {
+      await gotWithClientCert('koski/api/luovutuspalvelu/sensitive/110205A9654', {json: true})
+      const log = await getLatestLogEntry()
+      expect(log.requestUri).to.equal('/koski/api/luovutuspalvelu/sensitive/******-****')
     })
   })
 
