@@ -18,8 +18,7 @@ function mymodule.parse_xroad_client_id(req_body)
   parser:parse(req_body)
   local root = mymodule.remove_namespace_prefixes(handler.root)
   local client = root.Envelope.Header.client
-  print(client)
-  local id = client._attr['objectType'] .. ":" .. client.xRoadInstance .. "/" .. client.memberClass .. "/" .. client.memberCode .. "/" .. client.subsystemCode
+  local id = client._attr['objectType'] .. ":" .. client.xRoadInstance['1'] .. "/" .. client.memberClass['1'] .. "/" .. client.memberCode['1'] .. "/" .. client.subsystemCode['1']
   return id
 end
 
