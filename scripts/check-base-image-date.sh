@@ -8,6 +8,7 @@ dockerfile="$1"
 days="$2"
 
 image=$(grep ^FROM $dockerfile | head -1 | cut -d' ' -f2)
+docker pull $image
 created=$(docker inspect -f '{{ .Created }}' $image)
 days_ago=$(perl -MTime::Piece -e 'print localtime(time - '$days'*86400)->datetime')
 echo Base image of $dockerfile, $image, was created on $created

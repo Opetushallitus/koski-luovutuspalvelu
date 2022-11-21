@@ -5,16 +5,16 @@
   "scripts": {
     "test": "npm run testca && mocha test/proxy-test.js",
     "local": "npm run build && npm run testca && ./scripts/run-local.sh",
-    "build": "npm run buildversion && docker build --pull -t koski-luovutuspalvelu-proxy:latest . && ../scripts/check-base-image-date.sh Dockerfile 90",
+    "build": "npm run buildversion && ../scripts/check-base-image-date.sh Dockerfile 90 && docker build --pull --tag koski-luovutuspalvelu-proxy:latest .",
     "buildversion": "mkdir -p target && ./scripts/create-buildversion.sh target/buildversion.txt",
     "testca": "./test/testca/generate-certs.sh",
     "shell": "docker exec -it koski-luovutuspalvelu-proxy bash",
     "test-aws-config-dev": "npm run build && ./scripts/test-aws-config-dev.sh"
   },
   "devDependencies": {
-    "chai": "4.3.4",
-    "express": "4.17.1",
+    "chai": "4.3.7",
+    "express": "4.18.2",
     "got": "11.8.5",
-    "mocha": "9.2.2"
+    "mocha": "10.1.0"
   }
 }
