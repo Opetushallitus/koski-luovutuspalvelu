@@ -1,15 +1,15 @@
-FROM debian:bullseye-slim
+FROM debian:bullseye-slim@sha256:f7d141c1ec6af549958a7a2543365a7829c2cdc4476308ec2e182f8a7c59b519
 
 EXPOSE 443
 
 # Based on https://github.com/openresty/docker-openresty/blob/master/stretch/Dockerfile
 COPY src/openresty-pubkey.gpg /tmp/
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y gnupg2 \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y gnupg2 ca-certificates \
   && DEBIAN_FRONTEND=noninteractive apt-key add /tmp/openresty-pubkey.gpg \
-  && echo "deb http://openresty.org/package/debian stretch openresty" >> /etc/apt/sources.list \
+  && echo "deb https://openresty.org/package/debian bullseye openresty" >> /etc/apt/sources.list \
   && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3 python3-pip python3-setuptools openssl ca-certificates openresty \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3 python3-pip python3-setuptools openssl openresty \
   && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge gnupg2 \
   && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
   && pip3 install --no-cache-dir boto3 \

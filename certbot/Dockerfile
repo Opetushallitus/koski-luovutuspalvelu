@@ -1,8 +1,14 @@
-FROM alpine:3.17
+FROM alpine:3.17@sha256:b6ca290b6b4cdcca5b3db3ffa338ee0285c11744b4a6abaa9627746ee3291d8d
 
-RUN apk add --no-cache python3 openssl ca-certificates py3-cryptography py3-openssl py3-pip \
-  && pip install --no-cache-dir certbot==1.22.0 certbot-dns-route53==1.22.0
+RUN apk add --no-cache python3 openssl ca-certificates py3-cryptography py3-openssl \
+  && python3 -m venv /opt/python3-certbot \
+  && /opt/python3-certbot/bin/pip install --upgrade pip
 
-COPY main.py /root
-COPY target/buildversion.txt /root
-CMD cat /root/buildversion.txt && python3 /root/main.py
+WORKDIR /pip
+COPY requirements.txt .
+RUN /opt/python3-certbot/bin/pip install --no-cache-dir -r /pip/requirements.txt
+
+WORKDIR /root
+COPY main.py .
+COPY target/buildversion.txt .
+CMD cat /root/buildversion.txt && /opt/python3-certbot/bin/python3 /root/main.py

@@ -341,10 +341,20 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.headers).to.have.property('x-log', 'proxyResponse=notFound')
       expect(res.statusCode).to.equal(404)
     })
-    it('masks sensitive information in access log', async () => {
+    it('masks sensitive information in access log (1)', async () => {
       await gotWithClientCert('koski/api/luovutuspalvelu/sensitive/110205A9654', {json: true})
       const log = await getLatestLogEntry()
-      expect(log.requestUri).to.equal('/koski/api/luovutuspalvelu/sensitive/******-****')
+      expect(log.requestUri).to.equal('/koski/api/luovutuspalvelu/sensitive/***********')
+    })
+    it('masks sensitive information in access log (2)', async () => {
+      await gotWithClientCert('koski/api/luovutuspalvelu/sensitive/240896V670A', {json: true})
+      const log = await getLatestLogEntry()
+      expect(log.requestUri).to.equal('/koski/api/luovutuspalvelu/sensitive/***********')
+    })
+    it('masks sensitive information in access log (3)', async () => {
+      await gotWithClientCert('koski/api/luovutuspalvelu/sensitive/020996X347H', {json: true})
+      const log = await getLatestLogEntry()
+      expect(log.requestUri).to.equal('/koski/api/luovutuspalvelu/sensitive/***********')
     })
   })
 
