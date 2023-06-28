@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim@sha256:f7d141c1ec6af549958a7a2543365a7829c2cdc4476308ec2e182f8a7c59b519
+FROM debian:bullseye-slim@sha256:b74f58783fdb8f58107f1d0b3d8e7721e11feeacd9c4c8faa159a14bb0fc6bb3
 
 EXPOSE 443
 
