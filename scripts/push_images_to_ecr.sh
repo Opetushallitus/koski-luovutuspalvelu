@@ -8,7 +8,7 @@ ECR_HOST="190073735177.dkr.ecr.${AWS_REGION}.amazonaws.com"
 ECR_REPO="utility"
 DOCKER_TAG_NAME="ci-${TRAVIS_BUILD_NUMBER}"
 
-aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_HOST}
+aws ecr get-login-password --region ${AWS_REGION} --profile oph-utility | docker login --username AWS --password-stdin ${ECR_HOST}
 
 for ARTIFACT_NAME in koski-luovutuspalvelu-proxy koski-luovutuspalvelu-certbot; do
   docker tag ${ARTIFACT_NAME}:latest ${ECR_HOST}/${ECR_REPO}/${ARTIFACT_NAME}:latest

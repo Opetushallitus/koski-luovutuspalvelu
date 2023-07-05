@@ -77,6 +77,12 @@ Joskus voi olla hyödyllistä katsoa shellistä mitä ajossa olevassa kontissa t
 
     npm run shell
 
+Jos SOAP-parsimista haluaa debugata, on hyvä asentaa `lua`:
+
+    brew install lua
+
+Aja lisäksi `./install-lua-test-deps.sh`.
+
 Skriptin get-config-from-aws.py testaus vaatii pääsyn oph-koski-dev AWS-ympäristön
 (ohjeet koski-aws-infra/README.md tiedostossa):
 

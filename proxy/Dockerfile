@@ -37,9 +37,9 @@ RUN openssl x509 -in /tmp/vrksp3.crt -inform der -out /usr/share/ca-certificates
 # https://github.com/manoelcampos/xml2lua
 ADD \
   https://raw.githubusercontent.com/hamishforbes/lua-resty-iputils/0fb338577eeccd192df4c78bb27a083f481a7a6f/lib/resty/iputils.lua \
-  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/xmlhandler/tree.lua \
-  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/XmlParser.lua \
-  https://raw.githubusercontent.com/manoelcampos/xml2lua/4cd862f21a7496b4196086e760ba03f5449c14bf/xml2lua.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/7e36b2ecad91841ef41f1be29902ef769807e91d/xmlhandler/tree.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/7e36b2ecad91841ef41f1be29902ef769807e91d/XmlParser.lua \
+  https://raw.githubusercontent.com/manoelcampos/xml2lua/7e36b2ecad91841ef41f1be29902ef769807e91d/xml2lua.lua \
   /usr/local/openresty/site/lualib/
 RUN chmod a+r /usr/local/openresty/site/lualib/*.lua
 

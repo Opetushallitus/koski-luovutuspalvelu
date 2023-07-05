@@ -94,6 +94,36 @@ const exampleSoapRequest = `
 </SOAP-ENV:Envelope>
 `
 
+const exampleSoapRequest2 = `
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+      <xrd:client xmlns:xrd="http://x-road.eu/xsd/xroad.xsd" xmlns:id="http://x-road.eu/xsd/identifiers" id:objectType="SUBSYSTEM">
+          <id:xRoadInstance>FI-TEST</id:xRoadInstance>
+          <id:memberClass>GOV</id:memberClass>
+          <id:memberCode>0245437-2</id:memberCode>
+          <id:subsystemCode>ServiceViewClient</id:subsystemCode>
+      </xrd:client>
+      <xrd:service xmlns:xrd="http://x-road.eu/xsd/xroad.xsd" xmlns:id="http://x-road.eu/xsd/identifiers" id:objectType="SERVICE">
+          <id:xRoadInstance>FI-TEST</id:xRoadInstance>
+          <id:memberClass>GOV</id:memberClass>
+          <id:memberCode>2769790-1</id:memberCode>
+          <id:subsystemCode>koski</id:subsystemCode>
+          <id:serviceCode>suomiFiRekisteritiedot</id:serviceCode>
+          <id:serviceVersion>v1</id:serviceVersion>
+      </xrd:service>
+      <xrd:protocolVersion xmlns:xrd="http://x-road.eu/xsd/xroad.xsd">4.0</xrd:protocolVersion>
+      <xrd:userId xmlns:xrd="http://x-road.eu/xsd/xroad.xsd">jdoe</xrd:userId>
+      <xrd:id xmlns:xrd="http://x-road.eu/xsd/xroad.xsd">38997cf6400edd85</xrd:id>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+      <ns1:suomiFiRekisteritiedot xmlns:ns1="http://docs.koski-xroad.fi/producer">
+          <ns1:hetu xmlns:ns1="http://docs.koski-xroad.fi/producer">210281-9988</ns1:hetu>
+          <!-- <ns1:hetu>210281-9988</ns1:hetu> -->
+          </ns1:suomiFiRekisteritiedot>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+`
+
 const getLatestLogEntry = () => new Promise((resolve, reject) => {
   let stdout = ''
   const logs = spawn('docker', ['logs', 'koski-luovutuspalvelu-proxy'])
@@ -281,7 +311,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(bodyJson).to.have.nested.property('0.key', 'unauthorized.xroadSecurityServerOnly')
     })
 
-    it('proxying works if xroadSecurityServer flag is set', async () => {
+    it('proxying works if xroadSecurityServer flag is set, with SOAP request 1', async () => {
       const res = await gotWithClientCert4('koski/api/palveluvayla/soapSomething', {method: 'POST', body: exampleSoapRequest, headers: {'Content-Type': 'text/xml'}})
       expect(res.statusCode).to.equal(200)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
@@ -293,8 +323,29 @@ describe('koski-luovutuspalvelu proxy', () => {
       )
     })
 
-    it('requires known xroad client', async () => {
+    it('proxying works if xroadSecurityServer flag is set, with SOAP request 2', async () => {
+      const res = await gotWithClientCert4('koski/api/palveluvayla/soapSomething', {method: 'POST', body: exampleSoapRequest2, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(200)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=proxied')
+      const bodyJson = JSON.parse(res.body)
+      expect(bodyJson).to.have.nested.property('koskiMock.url', '/koski/api/palveluvayla/soapSomething')
+      expect(bodyJson).to.have.nested.property(
+        'koskiMock.headers.authorization',
+        'Basic ' + Buffer.from('clientuser5:dummy321').toString('base64')
+      )
+    })
+
+    it('requires known xroad client, with SOAP request 1', async () => {
       const requestBody = exampleSoapRequest.replace('ServiceViewClient', 'UnknownClient')
+      const res = await gotWithClientCert4('koski/api/palveluvayla/soapSomething', {method: 'POST', body: requestBody, headers: {'Content-Type': 'text/xml'}})
+      expect(res.statusCode).to.equal(403)
+      expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownXroadClient')
+      const bodyJson = JSON.parse(res.body)
+      expect(bodyJson).to.have.nested.property('0.key', 'unauthorized.unknownXroadClient')
+    })
+
+    it('requires known xroad client, with SOAP request 2', async () => {
+      const requestBody = exampleSoapRequest2.replace('ServiceViewClient', 'UnknownClient')
       const res = await gotWithClientCert4('koski/api/palveluvayla/soapSomething', {method: 'POST', body: requestBody, headers: {'Content-Type': 'text/xml'}})
       expect(res.statusCode).to.equal(403)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.unknownXroadClient')
