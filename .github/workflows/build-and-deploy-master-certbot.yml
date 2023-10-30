@@ -1,0 +1,112 @@
+name: "Build & Deploy Luovutuspalvelu Certbot"
+
+on:
+  push:
+    branches:
+      - lisaa-workflow-build-certbot # poista ennen mergeysta
+      - master
+
+env:
+  REPOSITORY_PREFIX: utility
+  ARTIFACT_NAME: koski-luovutuspalvelu-certbot
+  REGION: eu-west-1
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_SHA=$shortSha" >> "$GITHUB_ENV"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OPH_UTILITY_ROLE_ARN }}
+          role-session-name: koski-luovutuspalvelu-certbot-image-push-${{ steps.vars.outputs.SHORT_SHA }}
+          aws-region: ${{ env.REGION }}
+          mask-aws-account-id: 'true'
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Check if container image already exists in ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        id: check-image
+        run: |
+          echo "image-exists=$(docker manifest inspect "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA" > /dev/null 2>&1 ; echo $?)" >> $GITHUB_OUTPUT
+
+      - name: Build, tag and push image to Amazon ECR
+        if: steps.check-image.outputs.image-exists != '0' # '0' means it exists
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        working-directory: certbot
+        run: |
+          docker build . -t "$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
+          docker tag "$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA" "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
+          docker push "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
+
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        environment: [dev]
+    environment:
+      name: ${{ matrix.environment }}
+    name: Deploy to ${{ matrix.environment }}
+    needs: [build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_SHA=$shortSha" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.LUOVUTUSPALVELU_DEPLOY_ROLE }}
+          role-duration-seconds: 3600
+          role-session-name: koski-luovutuspalvelu-certbot-deploy-${{matrix.environment}}-${{ steps.vars.outputs.SHORT_SHA }}
+          aws-region: ${{ env.REGION }}
+          mask-aws-account-id: 'true'
+
+      - name: Get task definition skeleton
+        run: |
+          TASK_FAMILY="koski_luovutuspalvelu_certbot"
+          TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "${{ env.REGION }}" | jq -r .taskDefinition.taskDefinitionArn )
+          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition' > task-definition.json
+
+      - name: Render Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{env.ARTIFACT_NAME}}
+          image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Amazon ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+
+

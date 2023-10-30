@@ -10,5 +10,4 @@ RUN /opt/python3-certbot/bin/pip install --no-cache-dir -r /pip/requirements.txt
 
 WORKDIR /root
 COPY main.py .
-COPY target/buildversion.txt .
-CMD cat /root/buildversion.txt && /opt/python3-certbot/bin/python3 /root/main.py
+CMD /opt/python3-certbot/bin/python3 /root/main.py

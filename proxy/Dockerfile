@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim@sha256:b74f58783fdb8f58107f1d0b3d8e7721e11feeacd9c4c8faa159a14bb0fc6bb3
+FROM debian:bullseye-slim@sha256:b6d63c0260d528ebfd7c6e50d76ba7c9ff15698700a63e1f6b681876fffa6ff9
 
 EXPOSE 443
 
@@ -9,7 +9,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-key add /tmp/openresty-pubkey.gpg \
   && echo "deb https://openresty.org/package/debian bullseye openresty" >> /etc/apt/sources.list \
   && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3 python3-pip python3-setuptools openssl openresty \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3-setuptools python3 python3-pip python3-setuptools openssl openresty \
   && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge gnupg2 \
   && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
   && pip3 install --no-cache-dir boto3 \

@@ -2,12 +2,12 @@
 set -euo pipefail
 
 file=${1:-buildversion.txt}
-version=${KOSKI_VERSION:-local}
+version=$(git rev-parse HEAD)
 
-cat >$file <<EOL
+cat >"$file" <<EOL
 artifactId=koski-luovutuspalvelu-proxy
 version=$version
-buildNumber=${TRAVIS_BUILD_NUMBER:-unknown}
-vcsRevision=`git rev-parse HEAD`
-buildDate=`date`
+buildNumber=$version
+vcsRevision=$(git rev-parse HEAD)
+buildDate=$(date)
 EOL
