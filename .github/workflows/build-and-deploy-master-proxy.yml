@@ -57,7 +57,7 @@ jobs:
         run: |
           echo "image-exists=$(docker manifest inspect "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA" > /dev/null 2>&1 ; echo $?)" >> $GITHUB_OUTPUT
 
-      - name: Create target/buildversion.txt 
+      - name: Create target/buildversion.txt
         working-directory: proxy
         run: npm run buildversion
 
@@ -65,7 +65,7 @@ jobs:
         working-directory: proxy
         run: ../scripts/check-base-image-date.sh Dockerfile 90
 
-      - name: Build, tag and push image to Amazon ECR 
+      - name: Build, tag and push image to Amazon ECR
         working-directory: proxy
         if: steps.check-image.outputs.image-exists != '0' # '0' means it exists
         env:
@@ -84,10 +84,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: Install dependencies 
+      - name: Install dependencies
         working-directory: proxy
         run: npm ci
-      - name: Create target/buildversion.txt 
+      - name: Create target/buildversion.txt
         working-directory: proxy
         run: npm run buildversion
       - name: Run tests
@@ -132,7 +132,9 @@ jobs:
       - name: Get task definition skeleton
         run: |
           TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition "${{ env.TASK_FAMILY }}" --region "${{ env.REGION }}" | jq -r .taskDefinition.taskDefinitionArn )
-          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition' > task-definition.json
+          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition' \
+          | jq 'del(.registeredBy, .registeredAt, .status, .revision, .requiresAttributes, .taskDefinitionArn, .compatibilities)' \
+          > task-definition.json
 
       - name: Render Amazon ECS task definition
         id: render-task-def
