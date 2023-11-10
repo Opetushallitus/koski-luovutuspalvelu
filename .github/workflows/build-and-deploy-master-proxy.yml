@@ -3,7 +3,6 @@ name: "Build & Deploy Luovutuspalvelu Proxy"
 on:
   push:
     branches:
-      - lisaa-workflow-build-certbot # poista ennen mergeysta
       - master
 
 env:

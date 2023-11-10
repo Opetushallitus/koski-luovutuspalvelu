@@ -3,7 +3,6 @@ name: "Build & Deploy Luovutuspalvelu Certbot"
 on:
   push:
     branches:
-      - lisaa-workflow-build-certbot # poista ennen mergeysta
       - master
 
 env:
