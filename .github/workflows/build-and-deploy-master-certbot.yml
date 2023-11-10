@@ -94,7 +94,9 @@ jobs:
         run: |
           TASK_FAMILY="koski_luovutuspalvelu_certbot"
           TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "${{ env.REGION }}" | jq -r .taskDefinition.taskDefinitionArn )
-          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition' > task-definition.json
+          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition'  \
+          | jq 'del(.registeredBy, .registeredAt, .status, .revision, .requiresAttributes, .taskDefinitionArn, .compatibilities)' \
+          > task-definition.json
 
       - name: Render Amazon ECS task definition
         id: render-task-def
