@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - luovutuspalvelu-skriptit
+  workflow_dispatch:
 
 env:
   REPOSITORY_PREFIX: utility
