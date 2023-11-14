@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - luovutuspalvelu-skriptit
 
 env:
   REPOSITORY_PREFIX: utility
