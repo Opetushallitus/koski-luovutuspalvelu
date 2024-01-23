@@ -106,6 +106,10 @@ ja talleta se oph-koski-dev AWS-ympäristön "/local-certbot-test" polkuun
 
     ./scripts/run-locally-against-dev.sh
 
+## Certbotin manuaalinen ajaminen AWS:ssä
+
+`./certbot/scripts/trigger.sh (dev/qa/prod)`
+
 ## Linkkejä
 
 Tarkemmat [ylläpito-ohjeet](https://github.com/Opetushallitus/koski-aws-infra/blob/master/documentation/luovutuspalvelu.md).
