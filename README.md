@@ -94,10 +94,10 @@ Certbot ottaa yhteyttä Let's Encrypt CA:han ja tallettaa tulokset
 AWS:ään, joten sen testaaminen paikallisesti on hieman
 monimutkaisempaa.
 
-Docker-imagen saa buildattua helposti:
+Docker-imagen saa buildattua näin:
 
     cd certbot
-    ./scripts/build.sh
+    docker build . -t koski-luovutuspalvelu-certbot:latest
 
 Hae sertifikaatti Let's Encryptin Staging-ympäristöstä (ei siis
 tuotantosertifikaatti, tällä vältetään Let's Encryptin rate limitit)
