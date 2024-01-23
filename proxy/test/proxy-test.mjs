@@ -1,9 +1,10 @@
-const gotModule = require('got')
-const express = require('express')
-const fs = require('fs')
-const { spawn } = require('child_process')
+import { default as gotModule } from 'got'
+import { default as express } from 'express'
+import * as fs from 'fs'
+import { spawn } from 'child_process'
+import { expect } from 'chai'
 
-const expect = require('chai').expect
+const __dirname = new URL('.', import.meta.url).pathname
 
 const proxyPort = 7022
 const koskiMockPort = 7023
@@ -31,38 +32,22 @@ const gotWithoutClientCert = gotModule.extend({
   followRedirect: false,
   allowGetBody: true,
   retry: {limit: 0},
-  ca: fs.readFileSync(__dirname + '/testca/certs/root-ca.crt')
+  https: { certificateAuthority: fs.readFileSync(__dirname + '/testca/certs/root-ca.crt') }
 })
 
-const gotWithClientCert = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/client.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/client.crt'),
+const gotWithCert = (name) => gotWithoutClientCert.extend({
+  https: {
+    key: fs.readFileSync(`${__dirname}testca/private/${name}.key`),
+    certificate: fs.readFileSync(`${__dirname}testca/certs/${name}.crt`)
+  }
 })
 
-const gotWithClientCert2 = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/client2.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/client2.crt'),
-})
-
-const gotWithClientCert3 = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/client3.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/client3.crt'),
-})
-
-const gotWithClientCert4 = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/client4.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/client4.crt'),
-})
-
-const gotWithClientCert5 = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/client5.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/client5.crt'),
-})
-
-const gotWithSelfSignedClientCert = gotWithoutClientCert.extend({
-  key: fs.readFileSync(__dirname + '/testca/private/selfsigned.key'),
-  cert: fs.readFileSync(__dirname + '/testca/certs/selfsigned.crt'),
-})
+const gotWithClientCert = gotWithCert('client')
+const gotWithClientCert2 = gotWithCert('client2')
+const gotWithClientCert3 = gotWithCert('client3')
+const gotWithClientCert4 = gotWithCert('client4')
+const gotWithClientCert5 = gotWithCert('client5')
+const gotWithSelfSignedClientCert = gotWithCert('selfsigned')
 
 const exampleSoapRequest = `
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">

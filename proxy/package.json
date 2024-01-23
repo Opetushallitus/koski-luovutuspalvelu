@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "test": "npm run testca && mocha test/proxy-test.js",
+    "test": "npm run testca && mocha test/proxy-test.mjs",
     "local": "npm run build && npm run testca && ./scripts/run-local.sh",
     "build": "npm run buildversion && ../scripts/check-base-image-date.sh Dockerfile 90 && docker build --pull --tag koski-luovutuspalvelu-proxy:latest .",
     "buildversion": "mkdir -p target && ./scripts/create-buildversion.sh target/buildversion.txt",
@@ -12,9 +12,9 @@
     "test-aws-config-dev": "npm run build && ./scripts/test-aws-config-dev.sh"
   },
   "devDependencies": {
-    "chai": "^4.3.7",
+    "chai": "^5.0.0",
     "express": "^4.18.2",
-    "got": "^11.8.6",
+    "got": "^14.0.0",
     "mocha": "^10.2.0"
   }
 }
