@@ -97,7 +97,7 @@ monimutkaisempaa.
 Docker-imagen saa buildattua näin:
 
     cd certbot
-    docker build . -t koski-luovutuspalvelu-certbot:latest
+    docker build . --no-cache -t koski-luovutuspalvelu-certbot:latest
 
 Hae sertifikaatti Let's Encryptin Staging-ympäristöstä (ei siis
 tuotantosertifikaatti, tällä vältetään Let's Encryptin rate limitit)
