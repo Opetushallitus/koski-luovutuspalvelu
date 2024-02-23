@@ -1,14 +1,14 @@
-acme==2.8.0
-boto3==1.34.25
-botocore==1.34.25
-certbot==2.8.0
-certbot-dns-route53==2.8.0
-certifi==2023.11.17
+acme==2.9.0
+boto3==1.34.48
+botocore==1.34.48
+certbot==2.9.0
+certbot-dns-route53==2.9.0
+certifi==2024.2.2
 cffi==1.16.0
 charset-normalizer==3.3.2
 ConfigArgParse==1.7
 configobj==5.0.8
-cryptography==42.0.0
+cryptography==42.0.4
 distro==1.9.0
 idna==3.6
 jmespath==1.0.1
@@ -18,7 +18,7 @@ pycparser==2.21
 pyOpenSSL==24.0.0
 pyRFC3339==1.1
 python-dateutil==2.8.2
-pytz==2023.3.post1
+pytz==2024.1
 requests==2.31.0
 requests-toolbelt==1.0.0
 s3transfer==0.10.0
@@ -27,4 +27,4 @@ urllib3==1.26.18
 zope.component==6.0
 zope.event==5.0
 zope.hookable==6.0
-zope.interface==6.1
+zope.interface==6.2
