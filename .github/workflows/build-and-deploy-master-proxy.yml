@@ -104,7 +104,7 @@ jobs:
       max-parallel: 1
       fail-fast: true
       matrix:
-        environment: [dev, qa, prod]
+        environment: [dev,qa,prod]
     environment:
       name: ${{ matrix.environment }}
     name: Deploy to ${{ matrix.environment }}
@@ -129,11 +129,13 @@ jobs:
           mask-aws-account-id: 'true'
 
       - name: Get task definition skeleton
+        id: get-task-def
         run: |
           TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition "${{ env.TASK_FAMILY }}" --region "${{ env.REGION }}" | jq -r .taskDefinition.taskDefinitionArn )
           aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition' \
           | jq 'del(.registeredBy, .registeredAt, .status, .revision, .requiresAttributes, .taskDefinitionArn, .compatibilities)' \
           > task-definition.json
+          echo "TASK_DEFINITION_ARN=$TASK_DEFINITION_ARN" >> "$GITHUB_OUTPUT"
 
       - name: Render Amazon ECS task definition
         id: render-task-def
@@ -147,7 +149,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-
-      - name: Restart Luovutuspalvelu proxy
-        run: |
-          aws ecs update-service --cluster "${{ env.CLUSTER }}" --service "${{ env.TASK_FAMILY }}" --force-new-deployment --output text
+          service: ${{ env.TASK_FAMILY }}
+          cluster: ${{ env.CLUSTER }}
+          wait-for-service-stability: true
