@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 env:
   REPOSITORY_PREFIX: utility
@@ -100,6 +101,7 @@ jobs:
           sleep 5
           npm run test
   deploy:
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
