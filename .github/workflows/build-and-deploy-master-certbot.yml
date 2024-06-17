@@ -105,9 +105,48 @@ jobs:
           container-name: ${{env.ARTIFACT_NAME}}
           image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
 
-      - name: Deploy to Amazon ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+  deploy-cdk:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        environment: [dev]
+    environment:
+      name: ${{ matrix.environment }}
+    name: Deploy to ${{ matrix.environment }} (CDK)
+    needs: [build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set short git commit SHA
+        id: vars
+        run: |
+          shortSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_SHA=$shortSha" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          role-to-assume: ${{ secrets.LUOVUTUSPALVELU_DEPLOY_ROLE }}
+          role-duration-seconds: 3600
+          role-session-name: koski-luovutuspalvelu-certbot-deploy-${{matrix.environment}}-${{ steps.vars.outputs.SHORT_SHA }}
+          aws-region: ${{ env.REGION }}
+          mask-aws-account-id: 'true'
 
+      - name: Get task definition skeleton
+        run: |
+          TASK_FAMILY="oph_koski_luovutuspalvelu_certbot"
+          TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "${{ env.REGION }}" | jq -r .taskDefinition.taskDefinitionArn )
+          aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition'  \
+          | jq 'del(.registeredBy, .registeredAt, .status, .revision, .requiresAttributes, .taskDefinitionArn, .compatibilities)' \
+          > task-definition.json
 
+      - name: Render Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: oph-${{env.ARTIFACT_NAME}}
+          image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
