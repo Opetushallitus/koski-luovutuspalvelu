@@ -107,6 +107,11 @@ jobs:
           container-name: ${{env.ARTIFACT_NAME}}
           image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
 
+      - name: Deploy Amazon ECS task definition # Task definition is run by ECS Scheduled Task, not Service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+
   deploy-cdk:
     runs-on: ubuntu-latest
     strategy:
@@ -152,3 +157,8 @@ jobs:
           task-definition: task-definition.json
           container-name: oph-${{env.ARTIFACT_NAME}}
           image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
+
+      - name: Deploy Amazon ECS task definition # Task definition is run by ECS Scheduled Task, not Service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
