@@ -118,7 +118,7 @@ jobs:
       max-parallel: 1
       fail-fast: true
       matrix:
-        environment: [dev]
+        environment: [dev, qa]
     environment:
       name: ${{ matrix.environment }}
     name: Deploy to ${{ matrix.environment }} (CDK)
