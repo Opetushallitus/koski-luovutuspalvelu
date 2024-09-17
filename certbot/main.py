@@ -35,8 +35,10 @@ def obtain_certs(domain, use_staging):
     return certbot.main.main(certbot_args)
 
 def upload_certs(domain, parameter_prefix):
-    fullchain_file = os.path.join(CERTBOT_DIR, 'live', domain, 'fullchain.pem')
-    privkey_file = os.path.join(CERTBOT_DIR, 'live', domain, 'privkey.pem')
+    # In case of comma-separated domains the certificate is saved to the first domain
+    domains = domain.split(",")
+    fullchain_file = os.path.join(CERTBOT_DIR, 'live', domains[0], 'fullchain.pem')
+    privkey_file = os.path.join(CERTBOT_DIR, 'live', domain[0], 'privkey.pem')
     print(f'Reading {fullchain_file} and {privkey_file}')
     fullchain = open(fullchain_file).read()
     privkey = open(privkey_file).read()
