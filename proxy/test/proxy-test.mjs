@@ -361,6 +361,430 @@ describe('koski-luovutuspalvelu proxy', () => {
 
   })
 
+  describe("/koski/api/omadata-oauth2/authorization-server", () => {
+    it("proxies API calls to Koski", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.url",
+            "/koski/api/omadata-oauth2/authorization-server"
+        )
+    })
+
+    it("adds basic authentication to request", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.headers.authorization",
+            "Basic " + Buffer.from("clientuser:dummy123").toString("base64")
+        )
+    })
+
+    it("Does not add original Authorization header as X-Auth header ", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            {
+                json: true,
+                headers: {
+                    Authorization: "Bearer foobar",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).to.not.have.property("x-auth")
+    })
+
+    it("replaces X-Forwarded-For/X-Forwarded-Proto headers", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            {
+                json: true,
+                headers: {
+                    "X-Forwarded-For": "192.168.1.1",
+                    "X-Forwarded-Proto": "smtp",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).to.have.property("x-forwarded-for")
+        expect(headers["x-forwarded-for"]).to.not.include("192.168.1.1")
+        expect(headers).to.have.property("x-forwarded-proto", "https")
+    })
+
+    it("removes Forwarded and Cookie headers (might confuse Koski backend)", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            {
+                json: true,
+                headers: {
+                    Forwarded: "for=192.168.1.1",
+                    Cookie: "test=1",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).not.to.have.property("forwarded")
+        expect(headers).not.to.have.property("cookie")
+    })
+
+    it("adds Caller-Id header", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.headers.caller-id",
+            "1.2.246.562.10.00000000001.koski-luovutuspalvelu-proxy"
+        )
+    })
+
+    it("proxies 403 status code from Koski", async () => {
+        // TODO
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server/unauthorized",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+    })
+
+    it("proxies 404 status code from Koski", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/authorization-server/notfound",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(404)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+    })
+
+    it("requires SSL client certificate", async () => {
+        const res = await gotWithoutClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.clientCertificateRequired"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.clientCertificateRequired",
+                message: "Varmenne puuttuu",
+            },
+        ])
+    })
+
+    it("requires known SSL client certificate", async () => {
+        const res = await gotWithClientCert2(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.unknownClientCertificate"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.unknownClientCertificate",
+                message: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
+            },
+        ])
+    })
+
+    it("does not accept self-signed SSL client certificate", async () => {
+        const res = await gotWithSelfSignedClientCert(
+            "koski/api/omadata-oauth2/authorization-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(400)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.sslCertificateError"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.sslCertificateError",
+                message: "FAILED:self signed certificate",
+            },
+        ])
+    })
+
+    it("does not accept connections from unknown IP address", async () => {
+        const res = await gotWithClientCert3(
+            "koski/api/omadata-oauth2/authorization-server/ip",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.unknownIpAddress"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "0.key",
+            "unauthorized.unknownIpAddress"
+        )
+    })
+
+    it("returns graceful error when password is missing from config", async () => {
+        const res = await gotWithClientCert5(
+            "koski/api/omadata-oauth2/authorization-server/missing",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(500)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=internalError.missingPassword"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "0.key",
+            "internalError.missingPassword"
+        )
+    })
+  })
+
+  describe("/koski/api/omadata-oauth2/resource-server", () => {
+    it("proxies API calls to Koski", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.url",
+            "/koski/api/omadata-oauth2/resource-server"
+        )
+    })
+
+    it("adds basic authentication to request", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.headers.authorization",
+            "Basic " + Buffer.from("clientuser:dummy123").toString("base64")
+        )
+    })
+
+    it("Adds original Authorization header as X-Auth header ", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            {
+                json: true,
+                headers: {
+                    Authorization: "Bearer foobar",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).to.have.property("x-auth", "Bearer foobar")
+    })
+
+    it("replaces X-Forwarded-For/X-Forwarded-Proto headers", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            {
+                json: true,
+                headers: {
+                    "X-Forwarded-For": "192.168.1.1",
+                    "X-Forwarded-Proto": "smtp",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).to.have.property("x-forwarded-for")
+        expect(headers["x-forwarded-for"]).to.not.include("192.168.1.1")
+        expect(headers).to.have.property("x-forwarded-proto", "https")
+    })
+
+    it("removes Forwarded and Cookie headers (might confuse Koski backend)", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            {
+                json: true,
+                headers: {
+                    Forwarded: "for=192.168.1.1",
+                    Cookie: "test=1",
+                },
+            }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property("koskiMock.headers")
+        const headers = bodyJson.koskiMock.headers
+        expect(headers).not.to.have.property("forwarded")
+        expect(headers).not.to.have.property("cookie")
+    })
+
+    it("adds Caller-Id header", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(200)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "koskiMock.headers.caller-id",
+            "1.2.246.562.10.00000000001.koski-luovutuspalvelu-proxy"
+        )
+    })
+
+    it("proxies 403 status code from Koski", async () => {
+        // TODO
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server/unauthorized",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+    })
+
+    it("proxies 404 status code from Koski", async () => {
+        const res = await gotWithClientCert(
+            "koski/api/omadata-oauth2/resource-server/notfound",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(404)
+        expect(res.headers).to.have.property("x-log", "proxyResponse=proxied")
+    })
+
+    it("requires SSL client certificate", async () => {
+        const res = await gotWithoutClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.clientCertificateRequired"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.clientCertificateRequired",
+                message: "Varmenne puuttuu",
+            },
+        ])
+    })
+
+    it("requires known SSL client certificate", async () => {
+        const res = await gotWithClientCert2(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.unknownClientCertificate"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.unknownClientCertificate",
+                message: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
+            },
+        ])
+    })
+
+    it("does not accept self-signed SSL client certificate", async () => {
+        const res = await gotWithSelfSignedClientCert(
+            "koski/api/omadata-oauth2/resource-server",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(400)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.sslCertificateError"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.deep.equal([
+            {
+                key: "unauthorized.sslCertificateError",
+                message: "FAILED:self signed certificate",
+            },
+        ])
+    })
+
+    it("does not accept connections from unknown IP address", async () => {
+        const res = await gotWithClientCert3(
+            "koski/api/omadata-oauth2/resource-server/ip",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(403)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=unauthorized.unknownIpAddress"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "0.key",
+            "unauthorized.unknownIpAddress"
+        )
+    })
+
+    it("returns graceful error when password is missing from config", async () => {
+        const res = await gotWithClientCert5(
+            "koski/api/omadata-oauth2/resource-server/missing",
+            { json: true }
+        )
+        expect(res.statusCode).to.equal(500)
+        expect(res.headers).to.have.property(
+            "x-log",
+            "proxyResponse=internalError.missingPassword"
+        )
+        const bodyJson = JSON.parse(res.body)
+        expect(bodyJson).to.have.nested.property(
+            "0.key",
+            "internalError.missingPassword"
+        )
+    })
+  })
+
   describe('other URLs', () => {
     it('/ returns 404 foo', async () => {
       const res = await gotWithoutClientCert('')
