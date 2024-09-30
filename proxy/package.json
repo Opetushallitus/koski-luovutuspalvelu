@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "chai": "^5.1.1",
-    "express": "^4.19.2",
+    "express": "^4.21.0",
     "got": "^14.4.1",
     "mocha": "^10.4.0"
   }
