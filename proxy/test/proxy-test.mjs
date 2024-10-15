@@ -265,7 +265,7 @@ describe('koski-luovutuspalvelu proxy', () => {
       expect(res.statusCode).to.equal(400)
       expect(res.headers).to.have.property('x-log', 'proxyResponse=unauthorized.sslCertificateError')
       const bodyJson = JSON.parse(res.body)
-      expect(bodyJson).to.deep.equal([{"key": "unauthorized.sslCertificateError", "message": "FAILED:self signed certificate"}])
+      expect(bodyJson).to.deep.equal([{"key": "unauthorized.sslCertificateError", "message": "FAILED:self-signed certificate"}])
     })
 
     it('does not accept connections from unknown IP address', async () => {
@@ -533,7 +533,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         expect(bodyJson).to.deep.equal([
             {
                 key: "unauthorized.sslCertificateError",
-                message: "FAILED:self signed certificate",
+                message: "FAILED:self-signed certificate",
             },
         ])
     })
@@ -745,7 +745,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         expect(bodyJson).to.deep.equal([
             {
                 key: "unauthorized.sslCertificateError",
-                message: "FAILED:self signed certificate",
+                message: "FAILED:self-signed certificate",
             },
         ])
     })
