@@ -15,7 +15,7 @@ jmespath==1.0.1
 josepy==1.14.0
 parsedatetime==2.6
 pycparser==2.22
-pyOpenSSL==24.1.0
+pyOpenSSL==24.2.1
 pyRFC3339==1.1
 python-dateutil==2.9.0.post0
 pytz==2024.1
