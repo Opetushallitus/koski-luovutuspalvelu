@@ -1,4 +1,4 @@
-FROM alpine:3.20.0@sha256:77726ef6b57ddf65bb551896826ec38bc3e53f75cdde31354fbffb4f25238ebd
+FROM alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a
 
 RUN apk add --no-cache python3 openssl ca-certificates py3-cryptography py3-openssl \
   && python3 -m venv /opt/python3-certbot \
