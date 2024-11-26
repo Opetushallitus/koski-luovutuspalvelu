@@ -1,4 +1,4 @@
-FROM debian:bullseye-20241111-slim@sha256:60a596681410bd31a48e5975806a24cd78328f3fd6b9ee5bc64dca6d46a51f29
+FROM debian:bookworm-20241111-slim@sha256:ca3372ce30b03a591ec573ea975ad8b0ecaf0eb17a354416741f8001bbcae33d
 
 EXPOSE 443
 
@@ -7,12 +7,12 @@ COPY src/openresty-pubkey.gpg /tmp/
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y gnupg2 ca-certificates \
   && DEBIAN_FRONTEND=noninteractive apt-key add /tmp/openresty-pubkey.gpg \
-  && echo "deb https://openresty.org/package/debian bullseye openresty" >> /etc/apt/sources.list \
+  && echo "deb https://openresty.org/package/debian bookworm openresty" >> /etc/apt/sources.list \
   && DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests -y python3-setuptools python3 python3-pip python3-setuptools openssl openresty \
   && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge gnupg2 \
   && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
-  && pip3 install --no-cache-dir boto3 \
+  && pip3 install --no-cache-dir boto3 --break-system-packages \
   && rm -rf /var/lib/apt/lists/*
 
 # Add "VRK CA for Service Providers - G3" and "VRK Gov. Root CA" from https://dvv.fi/ca-varmenteet
