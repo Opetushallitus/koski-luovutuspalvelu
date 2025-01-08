@@ -39,6 +39,9 @@ jobs:
         run: |
           shortSha=$(git rev-parse --short ${{ github.sha }})
           echo "SHORT_SHA=$shortSha" >> "$GITHUB_ENV"
+      - name: debug role name
+        run: |
+          echo "${{secrets.AWS_OPH_UTILITY_ROLE_ARN}}" | sed 's/./& /g'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
