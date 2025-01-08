@@ -152,7 +152,7 @@ jobs:
           image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
 
       - name: Deploy to Amazon ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
           service: ${{ env.TASK_FAMILY_CDK }}
