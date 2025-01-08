@@ -12,7 +12,6 @@ on:
 env:
   REPOSITORY_PREFIX: utility
   ARTIFACT_NAME: koski-luovutuspalvelu-proxy
-  TASK_FAMILY: koski_luovutuspalvelu_proxy
   TASK_FAMILY_CDK: oph_koski_luovutuspalvelu_proxy
   CLUSTER: koski-cluster
   REGION: eu-west-1
