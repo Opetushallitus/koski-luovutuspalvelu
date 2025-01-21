@@ -463,7 +463,6 @@ describe('koski-luovutuspalvelu proxy', () => {
     })
 
     it("proxies 403 status code from Koski", async () => {
-        // TODO
         const res = await gotWithClientCert(
             "koski/api/omadata-oauth2/authorization-server/unauthorized",
             { json: true }
@@ -486,16 +485,16 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/authorization-server",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.clientCertificateRequired"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.clientCertificateRequired",
-                message: "Varmenne puuttuu",
+                error: "invalid_client",
+                error_description: "Varmenne puuttuu",
             },
         ])
     })
@@ -505,16 +504,16 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/authorization-server",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.unknownClientCertificate"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.unknownClientCertificate",
-                message: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
+                error: "invalid_client",
+                error_description: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
             },
         ])
     })
@@ -527,13 +526,13 @@ describe('koski-luovutuspalvelu proxy', () => {
         expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.sslCertificateError"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.sslCertificateError",
-                message: "FAILED:self-signed certificate",
+                error: "invalid_client",
+                error_description: "FAILED:self-signed certificate",
             },
         ])
     })
@@ -543,16 +542,17 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/authorization-server/ip",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.unknownIpAddress"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.key",
-            "unauthorized.unknownIpAddress"
+            "0.error",
+            "invalid_client"
         )
+        expect(res.body).to.contain("Tuntematon IP-osoite")
     })
 
     it("returns graceful error when password is missing from config", async () => {
@@ -675,7 +675,6 @@ describe('koski-luovutuspalvelu proxy', () => {
     })
 
     it("proxies 403 status code from Koski", async () => {
-        // TODO
         const res = await gotWithClientCert(
             "koski/api/omadata-oauth2/resource-server/unauthorized",
             { json: true }
@@ -698,16 +697,16 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/resource-server",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.clientCertificateRequired"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.clientCertificateRequired",
-                message: "Varmenne puuttuu",
+                error: "invalid_client",
+                error_description: "Varmenne puuttuu",
             },
         ])
     })
@@ -717,16 +716,16 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/resource-server",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.unknownClientCertificate"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.unknownClientCertificate",
-                message: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
+                error: "invalid_client",
+                error_description: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
             },
         ])
     })
@@ -739,13 +738,13 @@ describe('koski-luovutuspalvelu proxy', () => {
         expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.sslCertificateError"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.deep.equal([
             {
-                key: "unauthorized.sslCertificateError",
-                message: "FAILED:self-signed certificate",
+                error: "invalid_client",
+                error_description: "FAILED:self-signed certificate",
             },
         ])
     })
@@ -755,16 +754,17 @@ describe('koski-luovutuspalvelu proxy', () => {
             "koski/api/omadata-oauth2/resource-server/ip",
             { json: true }
         )
-        expect(res.statusCode).to.equal(403)
+        expect(res.statusCode).to.equal(400)
         expect(res.headers).to.have.property(
             "x-log",
-            "proxyResponse=unauthorized.unknownIpAddress"
+            "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.key",
-            "unauthorized.unknownIpAddress"
+            "0.error",
+            "invalid_client"
         )
+        expect(res.body).to.contain("Tuntematon IP-osoite")
     })
 
     it("returns graceful error when password is missing from config", async () => {
