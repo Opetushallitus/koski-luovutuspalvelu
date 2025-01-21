@@ -111,6 +111,6 @@ jobs:
           image: ${{ secrets.UTILITY_REPOSITORY_URL }}/${{ env.REPOSITORY_PREFIX }}/${{ env.ARTIFACT_NAME }}:${{ github.sha }}
 
       - name: Deploy Amazon ECS task definition # Task definition is run by ECS Scheduled Task, not Service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
