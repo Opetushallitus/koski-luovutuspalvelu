@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+mkdir -p target/
 config=target/koski-luovutuspalvelu-proxy-config-local.json
 node scripts/create-local-config.js > "$config"
 
