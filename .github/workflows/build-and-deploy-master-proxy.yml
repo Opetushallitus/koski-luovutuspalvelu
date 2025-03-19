@@ -76,7 +76,9 @@ jobs:
         run: |
           docker build . -t "$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
           docker tag "$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA" "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
+          docker tag "$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA" "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:latest"
           docker push "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:$GITHUB_SHA"
+          docker push "$ECR_REGISTRY/$REPOSITORY_PREFIX/$ARTIFACT_NAME:latest"
   test:
     name: Test
     runs-on: ubuntu-latest
