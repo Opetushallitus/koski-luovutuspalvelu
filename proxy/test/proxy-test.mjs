@@ -491,12 +491,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "Varmenne puuttuu",
             },
-        ])
+        )
     })
 
     it("requires known SSL client certificate", async () => {
@@ -510,12 +510,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
             },
-        ])
+        )
     })
 
     it("does not accept self-signed SSL client certificate", async () => {
@@ -529,12 +529,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "FAILED:self-signed certificate",
             },
-        ])
+        )
     })
 
     it("does not accept connections from unknown IP address", async () => {
@@ -549,7 +549,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.error",
+            "error",
             "invalid_client"
         )
         expect(res.body).to.contain("Tuntematon IP-osoite")
@@ -567,7 +567,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.key",
+            "error",
             "internalError.missingPassword"
         )
     })
@@ -703,12 +703,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "Varmenne puuttuu",
             },
-        ])
+        )
     })
 
     it("requires known SSL client certificate", async () => {
@@ -722,12 +722,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "Tuntematon varmenne: CN=client2.example.com,O=Testi,C=FI",
             },
-        ])
+        )
     })
 
     it("does not accept self-signed SSL client certificate", async () => {
@@ -741,12 +741,12 @@ describe('koski-luovutuspalvelu proxy', () => {
             "proxyResponse=invalid_client"
         )
         const bodyJson = JSON.parse(res.body)
-        expect(bodyJson).to.deep.equal([
+        expect(bodyJson).to.deep.equal(
             {
                 error: "invalid_client",
                 error_description: "FAILED:self-signed certificate",
             },
-        ])
+        )
     })
 
     it("does not accept connections from unknown IP address", async () => {
@@ -761,7 +761,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.error",
+            "error",
             "invalid_client"
         )
         expect(res.body).to.contain("Tuntematon IP-osoite")
@@ -779,7 +779,7 @@ describe('koski-luovutuspalvelu proxy', () => {
         )
         const bodyJson = JSON.parse(res.body)
         expect(bodyJson).to.have.nested.property(
-            "0.key",
+            "error",
             "internalError.missingPassword"
         )
     })
