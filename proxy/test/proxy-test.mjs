@@ -10,7 +10,7 @@ const proxyPort = 7022
 const koskiMockPort = 7023
 
 const koskiMockApp = express()
-koskiMockApp.all('/*', (req, res) => {
+koskiMockApp.all('/{*splat}', (req, res) => {
   // uncomment this to debug test failures
   // console.log(`koskiMockApp: ${req.url}`, req.headers)
   if (req.originalUrl.includes('notfound')) {
