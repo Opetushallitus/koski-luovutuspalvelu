@@ -1,5 +1,7 @@
 # Koski luovutuspalvelu
 
+## Tämä nginx-kontti on korvattu ALB-pohjaisella ratkaisulla ks. https://github.com/Opetushallitus/koski-aws-infra/blob/master/documentation/luovutuspalvelu-v2.md
+
 Luovutuspalvelu toimii proxynä Kosken ja viranomaisten järjestelmien tai
 palveluväylän liityntäpalvelimen välillä. Sen tehtävä on autentikoida
 sisääntulevat API-kutsut (viranomaiselta tai liityntäpalvelimelta)
