@@ -8,7 +8,7 @@ cffi==1.17.1
 charset-normalizer==3.4.2
 ConfigArgParse==1.7.1
 configobj==5.0.9
-cryptography==45.0.4
+cryptography==46.0.5
 distro==1.9.0
 idna==3.10
 jmespath==1.0.1
